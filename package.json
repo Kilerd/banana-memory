@@ -1,0 +1,40 @@
+{
+  "name": "banana-memory",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local, automatic, source-grounded memory for Claude Code",
+  "type": "module",
+  "overrides": { "sharp": "0.35.4" },
+  "engines": {
+    "node": "22.23.1"
+  },
+  "bin": {
+    "banana-memory": "dist/src/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test --test-concurrency=1 tests/*.test.ts",
+    "test:service": "tsx --test tests/service.test.ts",
+    "probe:storage": "tsx scripts/storage-probe.ts",
+    "evaluate:models": "tsx scripts/evaluate-models.ts",
+    "evaluate:pipeline": "tsx scripts/evaluate-local-pipeline.ts",
+    "evaluate:replay": "tsx scripts/evaluate-replay.ts",
+    "benchmark": "tsx scripts/benchmark.ts",
+    "package": "node scripts/package.mjs",
+    "site": "node scripts/serve-site.mjs"
+  },
+  "dependencies": {
+    "@lancedb/lancedb": "0.38.0",
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "apache-arrow": "18.1.0",
+    "proper-lockfile": "4.1.2",
+    "zod": "4.6.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.2",
+    "@types/proper-lockfile": "4.1.4",
+    "tsx": "4.23.13",
+    "typescript": "7.0.2"
+  }
+}

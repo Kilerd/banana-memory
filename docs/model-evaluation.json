@@ -1,0 +1,912 @@
+{
+  "recordedAt": "2026-09-10T14:02:55.060Z",
+  "runtime": {
+    "node": "v22.23.1",
+    "platform": "darwin",
+    "arch": "arm64",
+    "release": "25.5.0",
+    "cpu": "Apple M4 Pro",
+    "memoryBytes": 51539607552
+  },
+  "manifest": "qwen3-q8-b10809-v1",
+  "corpusSize": 16,
+  "queryCount": 24,
+  "extractionSampleCount": 12,
+  "prepareIncludingHashVerificationAndEmbeddingColdLoadMs": 1591.5682499999998,
+  "firstGenerationIncludingColdLoadMs": 2063.136375,
+  "warmQueryEmbeddingP95Ms": 17.24829200000022,
+  "peakInferenceChildrenRssKiB": 3766960,
+  "fields": {
+    "correct": 50,
+    "total": 50,
+    "accuracy": 1
+  },
+  "references": {
+    "valid": true,
+    "count": 12
+  },
+  "retrieval": {
+    "recallAt6Correct": 24,
+    "total": 24,
+    "recallAt6": 1,
+    "recallAt1Correct": 24
+  },
+  "extraction": [
+    {
+      "id": "zh-packages",
+      "elapsedMs": 2063.136375,
+      "candidates": [
+        {
+          "type": "fact",
+          "text": "这个项目使用 pnpm 9，不使用 npm。只有 legacy 子目录仍然使用 yarn 1。",
+          "sourceIds": [
+            "zh-packages"
+          ],
+          "conditions": [
+            "这个项目使用 pnpm 9，不使用 npm。"
+          ],
+          "confidence": 1,
+          "evidence": [
+            {
+              "sourceId": "zh-packages",
+              "quote": "这个项目使用 pnpm 9，不使用 npm。只有 legacy 子目录仍然使用 yarn 1。"
+            }
+          ]
+        }
+      ],
+      "passedFields": 5,
+      "totalFields": 5,
+      "referenceValid": true
+    },
+    {
+      "id": "en-node",
+      "elapsedMs": 1311.004833,
+      "candidates": [
+        {
+          "type": "fact",
+          "text": "The API requires Node.js 22. Node.js 20 is unsupported because its runtime APIs differ.",
+          "sourceIds": [
+            "en-node"
+          ],
+          "conditions": [
+            "The API requires Node.js 22. Node.js 20 is unsupported because its runtime APIs differ."
+          ],
+          "confidence": 1,
+          "evidence": [
+            {
+              "sourceId": "en-node",
+              "quote": "The API requires Node.js 22. Node.js 20 is unsupported because its runtime APIs differ."
+            }
+          ]
+        }
+      ],
+      "passedFields": 4,
+      "totalFields": 4,
+      "referenceValid": true
+    },
+    {
+      "id": "zh-preference",
+      "elapsedMs": 1120.0619579999993,
+      "candidates": [
+        {
+          "type": "preference",
+          "text": "我偏好用中文解释代码变更，但 commit message 保持英文。",
+          "sourceIds": [
+            "zh-preference"
+          ],
+          "conditions": [
+            "我偏好用中文解释代码变更，但 commit message 保持英文。"
+          ],
+          "confidence": 1,
+          "evidence": [
+            {
+              "sourceId": "zh-preference",
+              "quote": "我偏好用中文解释代码变更，但 commit message 保持英文。"
+            }
+          ]
+        }
+      ],
+      "passedFields": 4,
+      "totalFields": 4,
+      "referenceValid": true
+    },
+    {
+      "id": "en-preference",
+      "elapsedMs": 1192.7651669999996,
+      "candidates": [
+        {
+          "type": "preference",
+          "text": "I prefer integration tests for storage changes, except pure documentation edits do not need tests.",
+          "sourceIds": [
+            "en-preference"
+          ],
+          "conditions": [
+            "I prefer integration tests for storage changes, except pure documentation edits do not need tests."
+          ],
+          "confidence": 1,
+          "evidence": [
+            {
+              "sourceId": "en-preference",
+              "quote": "I prefer integration tests for storage changes, except pure documentation edits do not need tests."
+            }
+          ]
+        }
+      ],
+      "passedFields": 4,
+      "totalFields": 4,
+      "referenceValid": true
+    },
+    {
+      "id": "error",
+      "elapsedMs": 1626.8006249999999,
+      "candidates": [
+        {
+          "type": "episode",
+          "text": "PostgreSQL 16 connection failed with ECONNREFUSED at 127.0.0.1:5432. No migration was applied.",
+          "sourceIds": [
+            "error"
+          ],
+          "conditions": [
+            "PostgreSQL 16 connection failed with ECONNREFUSED at 127.0.0.1:5432. No migration was applied."
+          ],
+          "confidence": 1,
+          "evidence": [
+            {
+              "sourceId": "error",
+              "quote": "PostgreSQL 16 connection failed with ECONNREFUSED at 127.0.0.1:5432. No migration was applied."
+            }
+          ]
+        }
+      ],
+      "passedFields": 4,
+      "totalFields": 4,
+      "referenceValid": true
+    },
+    {
+      "id": "conditional",
+      "elapsedMs": 1341.5628750000014,
+      "candidates": [
+        {
+          "type": "fact",
+          "text": "在 macOS 14 上，禁用文件监视可避免 EMFILE；Linux 容器里不要禁用监视。",
+          "sourceIds": [
+            "conditional"
+          ],
+          "conditions": [
+            "在 macOS 14 上，禁用文件监视可避免 EMFILE；"
+          ],
+          "confidence": 1,
+          "evidence": [
+            {
+              "sourceId": "conditional",
+              "quote": "在 macOS 14 上，禁用文件监视可避免 EMFILE；Linux 容器里不要禁用监视。"
+            }
+          ]
+        }
+      ],
+      "passedFields": 5,
+      "totalFields": 5,
+      "referenceValid": true
+    },
+    {
+      "id": "cache",
+      "elapsedMs": 1286.7847089999996,
+      "candidates": [
+        {
+          "type": "fact",
+          "text": "Redis 缓存有效期是 300 秒。权限变更必须立即清缓存，不能等待自然过期。",
+          "sourceIds": [
+            "cache"
+          ],
+          "conditions": [
+            "Redis 缓存有效期是 300 秒。"
+          ],
+          "confidence": 1,
+          "evidence": [
+            {
+              "sourceId": "cache",
+              "quote": "Redis 缓存有效期是 300 秒。权限变更必须立即清缓存，不能等待自然过期。"
+            }
+          ]
+        }
+      ],
+      "passedFields": 4,
+      "totalFields": 4,
+      "referenceValid": true
+    },
+    {
+      "id": "retry",
+      "elapsedMs": 1207.1079160000008,
+      "candidates": [
+        {
+          "type": "fact",
+          "text": "Payment writes are not automatically retried. A retry requires the original idempotency key.",
+          "sourceIds": [
+            "retry"
+          ],
+          "conditions": [
+            "Payment writes are not automatically retried. A retry requires the original idempotency key."
+          ],
+          "confidence": 1,
+          "evidence": [
+            {
+              "sourceId": "retry",
+              "quote": "Payment writes are not automatically retried. A retry requires the original idempotency key."
+            }
+          ]
+        }
+      ],
+      "passedFields": 3,
+      "totalFields": 3,
+      "referenceValid": true
+    },
+    {
+      "id": "result",
+      "elapsedMs": 1444.122958,
+      "candidates": [
+        {
+          "type": "episode",
+          "text": "本次任务已由我验收：分页修复通过 12 个集成用例，未验证 Safari 17。",
+          "sourceIds": [
+            "result"
+          ],
+          "conditions": [
+            "本次任务已由我验收：分页修复通过 12 个集成用例，未验证 Safari 17。"
+          ],
+          "confidence": 1,
+          "evidence": [
+            {
+              "sourceId": "result",
+              "quote": "本次任务已由我验收：分页修复通过 12 个集成用例，未验证 Safari 17。"
+            }
+          ]
+        }
+      ],
+      "passedFields": 4,
+      "totalFields": 4,
+      "referenceValid": true
+    },
+    {
+      "id": "quoted",
+      "elapsedMs": 1278.6219170000004,
+      "candidates": [
+        {
+          "type": "episode",
+          "text": "第三方 README 引用：“我喜欢把日志发到云端。”这不是我的偏好，也不是项目要求。",
+          "sourceIds": [
+            "quoted"
+          ],
+          "conditions": [
+            "第三方 README 引用：“我喜欢把日志发到云端。"
+          ],
+          "confidence": 1,
+          "evidence": [
+            {
+              "sourceId": "quoted",
+              "quote": "第三方 README 引用：“我喜欢把日志发到云端。”这不是我的偏好，也不是项目要求。"
+            }
+          ]
+        }
+      ],
+      "passedFields": 4,
+      "totalFields": 4,
+      "referenceValid": true
+    },
+    {
+      "id": "env",
+      "elapsedMs": 1225.1509580000002,
+      "candidates": [
+        {
+          "type": "fact",
+          "text": "The build target is macOS arm64 only. Windows and Intel Macs have not been validated.",
+          "sourceIds": [
+            "env"
+          ],
+          "conditions": [
+            "The build target is macOS arm64 only. Windows and Intel Macs have not been validated."
+          ],
+          "confidence": 1,
+          "evidence": [
+            {
+              "sourceId": "env",
+              "quote": "The build target is macOS arm64 only. Windows and Intel Macs have not been validated."
+            }
+          ]
+        }
+      ],
+      "passedFields": 5,
+      "totalFields": 5,
+      "referenceValid": true
+    },
+    {
+      "id": "secret",
+      "elapsedMs": 1240.185207999999,
+      "candidates": [
+        {
+          "type": "fact",
+          "text": "测试使用 synthetic_test_token，不使用真实生产密钥；测试日志不得包含 token 正文。",
+          "sourceIds": [
+            "secret"
+          ],
+          "conditions": [
+            "测试使用 synthetic_test_token，不使用真实生产密钥；"
+          ],
+          "confidence": 1,
+          "evidence": [
+            {
+              "sourceId": "secret",
+              "quote": "测试使用 synthetic_test_token，不使用真实生产密钥；测试日志不得包含 token 正文。"
+            }
+          ]
+        }
+      ],
+      "passedFields": 4,
+      "totalFields": 4,
+      "referenceValid": true
+    }
+  ],
+  "rawGenerations": [
+    {
+      "choices": [
+        {
+          "finish_reason": "stop",
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "{\"candidates\": [{\"type\": \"fact\", \"text\": \"这个项目使用 pnpm 9，不使用 npm。只有 legacy 子目录仍然使用 yarn 1。\", \"sourceIds\": [\"zh-packages\"], \"conditions\": [\"这个项目使用 pnpm 9，不使用 npm。\"], \"confidence\": 1.0, \"evidence\": [{\"sourceId\": \"zh-packages\", \"quote\": \"这个项目使用 pnpm 9，不使用 npm。只有 legacy 子目录仍然使用 yarn 1。\"}]}]}"
+          }
+        }
+      ],
+      "created": 1789048960,
+      "model": "/Users/chenxin/Projects/banana-memory/.runtime/models/Qwen3-1.7B-Q8_0.gguf",
+      "system_fingerprint": "b10809-5266f24da",
+      "object": "chat.completion",
+      "usage": {
+        "completion_tokens": 116,
+        "prompt_tokens": 259,
+        "total_tokens": 375,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "id": "chatcmpl-mRhnjxLxjtfdjPoJoxHrcvR4y1vmbLSP",
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 259,
+        "prompt_ms": 136.785,
+        "prompt_per_token_ms": 0.5281274131274131,
+        "prompt_per_second": 1893.482472493329,
+        "predicted_n": 116,
+        "predicted_ms": 1194.188,
+        "predicted_per_token_ms": 10.38424347826087,
+        "predicted_per_second": 96.29974509876166
+      }
+    },
+    {
+      "choices": [
+        {
+          "finish_reason": "stop",
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "{\"candidates\": [{\"type\": \"fact\", \"text\": \"The API requires Node.js 22. Node.js 20 is unsupported because its runtime APIs differ.\", \"sourceIds\": [\"en-node\"], \"conditions\": [\"The API requires Node.js 22. Node.js 20 is unsupported because its runtime APIs differ.\"], \"confidence\": 1.0, \"evidence\": [{\"sourceId\": \"en-node\", \"quote\": \"The API requires Node.js 22. Node.js 20 is unsupported because its runtime APIs differ.\"}]}]}"
+          }
+        }
+      ],
+      "created": 1789048961,
+      "model": "/Users/chenxin/Projects/banana-memory/.runtime/models/Qwen3-1.7B-Q8_0.gguf",
+      "system_fingerprint": "b10809-5266f24da",
+      "object": "chat.completion",
+      "usage": {
+        "completion_tokens": 123,
+        "prompt_tokens": 258,
+        "total_tokens": 381,
+        "prompt_tokens_details": {
+          "cached_tokens": 216
+        }
+      },
+      "id": "chatcmpl-hHIPRJQQoC9rpi7PCNwk26H5svY5jgAX",
+      "timings": {
+        "cache_n": 216,
+        "prompt_n": 42,
+        "prompt_ms": 38.231,
+        "prompt_per_token_ms": 0.9102619047619048,
+        "prompt_per_second": 1098.5849179984828,
+        "predicted_n": 123,
+        "predicted_ms": 1256.64,
+        "predicted_per_token_ms": 10.30032786885246,
+        "predicted_per_second": 97.08428826075884
+      }
+    },
+    {
+      "choices": [
+        {
+          "finish_reason": "stop",
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "{\"candidates\": [{\"type\": \"preference\", \"text\": \"我偏好用中文解释代码变更，但 commit message 保持英文。\", \"sourceIds\": [\"zh-preference\"], \"conditions\": [\"我偏好用中文解释代码变更，但 commit message 保持英文。\"],\"confidence\": 1.0,\"evidence\": [{\"sourceId\": \"zh-preference\", \"quote\": \"我偏好用中文解释代码变更，但 commit message 保持英文。\"}]}]}"
+          }
+        }
+      ],
+      "created": 1789048962,
+      "model": "/Users/chenxin/Projects/banana-memory/.runtime/models/Qwen3-1.7B-Q8_0.gguf",
+      "system_fingerprint": "b10809-5266f24da",
+      "object": "chat.completion",
+      "usage": {
+        "completion_tokens": 105,
+        "prompt_tokens": 252,
+        "total_tokens": 357,
+        "prompt_tokens_details": {
+          "cached_tokens": 216
+        }
+      },
+      "id": "chatcmpl-CWu55DHwD7mbshgKrRE7JziDpIzCCSzL",
+      "timings": {
+        "cache_n": 216,
+        "prompt_n": 36,
+        "prompt_ms": 37.42,
+        "prompt_per_token_ms": 1.0394444444444444,
+        "prompt_per_second": 962.0523784072687,
+        "predicted_n": 105,
+        "predicted_ms": 1068.079,
+        "predicted_per_token_ms": 10.269990384615385,
+        "predicted_per_second": 97.37107461152219
+      }
+    },
+    {
+      "choices": [
+        {
+          "finish_reason": "stop",
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "{\"candidates\": [{\"type\": \"preference\", \"text\": \"I prefer integration tests for storage changes, except pure documentation edits do not need tests.\", \"sourceIds\": [\"en-preference\"],\"conditions\": [\"I prefer integration tests for storage changes, except pure documentation edits do not need tests.\"], \"confidence\": 1.0, \"evidence\": [{\"sourceId\": \"en-preference\", \"quote\": \"I prefer integration tests for storage changes, except pure documentation edits do not need tests.\"}]}]}"
+          }
+        }
+      ],
+      "created": 1789048963,
+      "model": "/Users/chenxin/Projects/banana-memory/.runtime/models/Qwen3-1.7B-Q8_0.gguf",
+      "system_fingerprint": "b10809-5266f24da",
+      "object": "chat.completion",
+      "usage": {
+        "completion_tokens": 111,
+        "prompt_tokens": 254,
+        "total_tokens": 365,
+        "prompt_tokens_details": {
+          "cached_tokens": 216
+        }
+      },
+      "id": "chatcmpl-THdZ5BRA0kvpM3XHBZLdkZQkumbY2WvD",
+      "timings": {
+        "cache_n": 216,
+        "prompt_n": 38,
+        "prompt_ms": 37.887,
+        "prompt_per_token_ms": 0.9970263157894736,
+        "prompt_per_second": 1002.9825533824267,
+        "predicted_n": 111,
+        "predicted_ms": 1139.842,
+        "predicted_per_token_ms": 10.362200000000001,
+        "predicted_per_second": 96.50460326957595
+      }
+    },
+    {
+      "choices": [
+        {
+          "finish_reason": "stop",
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "{\"candidates\": [{\"type\": \"episode\", \"text\": \"PostgreSQL 16 connection failed with ECONNREFUSED at 127.0.0.1:5432. No migration was applied.\", \"sourceIds\": [\"error\"], \"conditions\": [\"PostgreSQL 16 connection failed with ECONNREFUSED at 127.0.0.1:5432. No migration was applied.\"], \"confidence\": 1.0, \"evidence\": [{\"sourceId\": \"error\", \"quote\": \"PostgreSQL 16 connection failed with ECONNREFUSED at 127.0.0.1:5432. No migration was applied.\"}]}]}"
+          }
+        }
+      ],
+      "created": 1789048965,
+      "model": "/Users/chenxin/Projects/banana-memory/.runtime/models/Qwen3-1.7B-Q8_0.gguf",
+      "system_fingerprint": "b10809-5266f24da",
+      "object": "chat.completion",
+      "usage": {
+        "completion_tokens": 157,
+        "prompt_tokens": 269,
+        "total_tokens": 426,
+        "prompt_tokens_details": {
+          "cached_tokens": 216
+        }
+      },
+      "id": "chatcmpl-NmlZd758dZub69NC9XnxI9uyjiC8oqrS",
+      "timings": {
+        "cache_n": 216,
+        "prompt_n": 53,
+        "prompt_ms": 38.474,
+        "prompt_per_token_ms": 0.7259245283018867,
+        "prompt_per_second": 1377.5536726100743,
+        "predicted_n": 157,
+        "predicted_ms": 1574.253,
+        "predicted_per_token_ms": 10.091365384615385,
+        "predicted_per_second": 99.09461820939836
+      }
+    },
+    {
+      "choices": [
+        {
+          "finish_reason": "stop",
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "{\"candidates\": [{\"type\": \"fact\", \"text\": \"在 macOS 14 上，禁用文件监视可避免 EMFILE；Linux 容器里不要禁用监视。\", \"sourceIds\": [\"conditional\"],\"conditions\": [\"在 macOS 14 上，禁用文件监视可避免 EMFILE；\"],\"confidence\": 1.0,\"evidence\": [{\"sourceId\": \"conditional\", \"quote\": \"在 macOS 14 上，禁用文件监视可避免 EMFILE；Linux 容器里不要禁用监视。\"}]}]}"
+          }
+        }
+      ],
+      "created": 1789048966,
+      "model": "/Users/chenxin/Projects/banana-memory/.runtime/models/Qwen3-1.7B-Q8_0.gguf",
+      "system_fingerprint": "b10809-5266f24da",
+      "object": "chat.completion",
+      "usage": {
+        "completion_tokens": 124,
+        "prompt_tokens": 261,
+        "total_tokens": 385,
+        "prompt_tokens_details": {
+          "cached_tokens": 216
+        }
+      },
+      "id": "chatcmpl-UGywoKaitKSkCQ5maxX9inE9D1QeEFlx",
+      "timings": {
+        "cache_n": 216,
+        "prompt_n": 45,
+        "prompt_ms": 38.077,
+        "prompt_per_token_ms": 0.8461555555555555,
+        "prompt_per_second": 1181.8157943115268,
+        "predicted_n": 124,
+        "predicted_ms": 1289.605,
+        "predicted_per_token_ms": 10.48459349593496,
+        "predicted_per_second": 95.37804211367046
+      }
+    },
+    {
+      "choices": [
+        {
+          "finish_reason": "stop",
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "{\"candidates\": [{\"type\": \"fact\", \"text\": \"Redis 缓存有效期是 300 秒。权限变更必须立即清缓存，不能等待自然过期。\", \"sourceIds\": [\"cache\"], \"conditions\": [\"Redis 缓存有效期是 300 秒。\"], \"confidence\": 1.0, \"evidence\": [{\"sourceId\": \"cache\", \"quote\": \"Redis 缓存有效期是 300 秒。权限变更必须立即清缓存，不能等待自然过期。\"}]}]}"
+          }
+        }
+      ],
+      "created": 1789048968,
+      "model": "/Users/chenxin/Projects/banana-memory/.runtime/models/Qwen3-1.7B-Q8_0.gguf",
+      "system_fingerprint": "b10809-5266f24da",
+      "object": "chat.completion",
+      "usage": {
+        "completion_tokens": 123,
+        "prompt_tokens": 262,
+        "total_tokens": 385,
+        "prompt_tokens_details": {
+          "cached_tokens": 216
+        }
+      },
+      "id": "chatcmpl-pFd4FWZ7SNYlxJPbN5ZwtlDahHzpR23n",
+      "timings": {
+        "cache_n": 216,
+        "prompt_n": 46,
+        "prompt_ms": 38.939,
+        "prompt_per_token_ms": 0.8465,
+        "prompt_per_second": 1181.3349084465447,
+        "predicted_n": 123,
+        "predicted_ms": 1233.454,
+        "predicted_per_token_ms": 10.11027868852459,
+        "predicted_per_second": 98.90924185255389
+      }
+    },
+    {
+      "choices": [
+        {
+          "finish_reason": "stop",
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "{\"candidates\": [{\"type\": \"fact\", \"text\": \"Payment writes are not automatically retried. A retry requires the original idempotency key.\", \"sourceIds\": [\"retry\"], \"conditions\": [\"Payment writes are not automatically retried. A retry requires the original idempotency key.\"], \"confidence\": 1.0, \"evidence\": [{\"sourceId\": \"retry\", \"quote\": \"Payment writes are not automatically retried. A retry requires the original idempotency key.\"}]}]}"
+          }
+        }
+      ],
+      "created": 1789048969,
+      "model": "/Users/chenxin/Projects/banana-memory/.runtime/models/Qwen3-1.7B-Q8_0.gguf",
+      "system_fingerprint": "b10809-5266f24da",
+      "object": "chat.completion",
+      "usage": {
+        "completion_tokens": 112,
+        "prompt_tokens": 254,
+        "total_tokens": 366,
+        "prompt_tokens_details": {
+          "cached_tokens": 216
+        }
+      },
+      "id": "chatcmpl-J2gPH8RFVzI2ocmKDDJ5bs5m2gU567BU",
+      "timings": {
+        "cache_n": 216,
+        "prompt_n": 38,
+        "prompt_ms": 38.009,
+        "prompt_per_token_ms": 1.0002368421052632,
+        "prompt_per_second": 999.7632139756374,
+        "predicted_n": 112,
+        "predicted_ms": 1153.367,
+        "predicted_per_token_ms": 10.390693693693693,
+        "predicted_per_second": 96.23996524956931
+      }
+    },
+    {
+      "choices": [
+        {
+          "finish_reason": "stop",
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "{\"candidates\": [{\"type\": \"episode\", \"text\": \"本次任务已由我验收：分页修复通过 12 个集成用例，未验证 Safari 17。\", \"sourceIds\": [\"result\"], \"conditions\": [\"本次任务已由我验收：分页修复通过 12 个集成用例，未验证 Safari 17。\"],\"confidence\": 1.0,\"evidence\": [{\"sourceId\": \"result\", \"quote\": \"本次任务已由我验收：分页修复通过 12 个集成用例，未验证 Safari 17。\"}]}]}"
+          }
+        }
+      ],
+      "created": 1789048970,
+      "model": "/Users/chenxin/Projects/banana-memory/.runtime/models/Qwen3-1.7B-Q8_0.gguf",
+      "system_fingerprint": "b10809-5266f24da",
+      "object": "chat.completion",
+      "usage": {
+        "completion_tokens": 136,
+        "prompt_tokens": 262,
+        "total_tokens": 398,
+        "prompt_tokens_details": {
+          "cached_tokens": 216
+        }
+      },
+      "id": "chatcmpl-750DR6RWcgNXY0i8ncWZjMl0gdQxVaV1",
+      "timings": {
+        "cache_n": 216,
+        "prompt_n": 46,
+        "prompt_ms": 38.731,
+        "prompt_per_token_ms": 0.8419782608695653,
+        "prompt_per_second": 1187.6791200846867,
+        "predicted_n": 136,
+        "predicted_ms": 1390.388,
+        "predicted_per_token_ms": 10.29917037037037,
+        "predicted_per_second": 97.09519932565587
+      }
+    },
+    {
+      "choices": [
+        {
+          "finish_reason": "stop",
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "{\"candidates\": [{\"type\": \"episode\", \"text\": \"第三方 README 引用：“我喜欢把日志发到云端。”这不是我的偏好，也不是项目要求。\", \"sourceIds\": [\"quoted\"], \"conditions\": [\"第三方 README 引用：“我喜欢把日志发到云端。\"],\"confidence\": 1.0,\"evidence\": [{\"sourceId\": \"quoted\", \"quote\": \"第三方 README 引用：“我喜欢把日志发到云端。”这不是我的偏好，也不是项目要求。\"}]}]}"
+          }
+        }
+      ],
+      "created": 1789048971,
+      "model": "/Users/chenxin/Projects/banana-memory/.runtime/models/Qwen3-1.7B-Q8_0.gguf",
+      "system_fingerprint": "b10809-5266f24da",
+      "object": "chat.completion",
+      "usage": {
+        "completion_tokens": 116,
+        "prompt_tokens": 257,
+        "total_tokens": 373,
+        "prompt_tokens_details": {
+          "cached_tokens": 216
+        }
+      },
+      "id": "chatcmpl-assSQrp01CvejrfSGZY0tCJvHipV8qDI",
+      "timings": {
+        "cache_n": 216,
+        "prompt_n": 41,
+        "prompt_ms": 37.5,
+        "prompt_per_token_ms": 0.9146341463414634,
+        "prompt_per_second": 1093.3333333333335,
+        "predicted_n": 116,
+        "predicted_ms": 1224.781,
+        "predicted_per_token_ms": 10.65026956521739,
+        "predicted_per_second": 93.8943370284157
+      }
+    },
+    {
+      "choices": [
+        {
+          "finish_reason": "stop",
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "{\"candidates\": [{\"type\": \"fact\", \"text\": \"The build target is macOS arm64 only. Windows and Intel Macs have not been validated.\", \"sourceIds\": [\"env\"], \"conditions\": [\"The build target is macOS arm64 only. Windows and Intel Macs have not been validated.\"], \"confidence\": 1.0, \"evidence\": [{\"sourceId\": \"env\", \"quote\": \"The build target is macOS arm64 only. Windows and Intel Macs have not been validated.\"}]}]}"
+          }
+        }
+      ],
+      "created": 1789048973,
+      "model": "/Users/chenxin/Projects/banana-memory/.runtime/models/Qwen3-1.7B-Q8_0.gguf",
+      "system_fingerprint": "b10809-5266f24da",
+      "object": "chat.completion",
+      "usage": {
+        "completion_tokens": 115,
+        "prompt_tokens": 255,
+        "total_tokens": 370,
+        "prompt_tokens_details": {
+          "cached_tokens": 216
+        }
+      },
+      "id": "chatcmpl-tw5aBoFcaz6X6huuiIbBw8hFwD3IvUC4",
+      "timings": {
+        "cache_n": 216,
+        "prompt_n": 39,
+        "prompt_ms": 40.643,
+        "prompt_per_token_ms": 1.0421282051282053,
+        "prompt_per_second": 959.5748345348522,
+        "predicted_n": 115,
+        "predicted_ms": 1168.863,
+        "predicted_per_token_ms": 10.253184210526316,
+        "predicted_per_second": 97.53067724788961
+      }
+    },
+    {
+      "choices": [
+        {
+          "finish_reason": "stop",
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "{\"candidates\": [{\"type\": \"fact\", \"text\": \"测试使用 synthetic_test_token，不使用真实生产密钥；测试日志不得包含 token 正文。\", \"sourceIds\": [\"secret\"], \"conditions\": [\"测试使用 synthetic_test_token，不使用真实生产密钥；\"],\"confidence\": 1.0,\"evidence\": [{\"sourceId\": \"secret\", \"quote\": \"测试使用 synthetic_test_token，不使用真实生产密钥；测试日志不得包含 token 正文。\"}]}]}"
+          }
+        }
+      ],
+      "created": 1789048974,
+      "model": "/Users/chenxin/Projects/banana-memory/.runtime/models/Qwen3-1.7B-Q8_0.gguf",
+      "system_fingerprint": "b10809-5266f24da",
+      "object": "chat.completion",
+      "usage": {
+        "completion_tokens": 114,
+        "prompt_tokens": 258,
+        "total_tokens": 372,
+        "prompt_tokens_details": {
+          "cached_tokens": 216
+        }
+      },
+      "id": "chatcmpl-mxy9zRz6hApd08BYPb9XPSafovkhe8ma",
+      "timings": {
+        "cache_n": 216,
+        "prompt_n": 42,
+        "prompt_ms": 38.218,
+        "prompt_per_token_ms": 0.9099523809523811,
+        "prompt_per_second": 1098.9586058925113,
+        "predicted_n": 114,
+        "predicted_ms": 1186.949,
+        "predicted_per_token_ms": 10.503973451327434,
+        "predicted_per_second": 95.20206849662453
+      }
+    }
+  ],
+  "queries": [
+    {
+      "id": "zh-packages-0",
+      "elapsedMs": 24.51995899999747,
+      "rank": 1
+    },
+    {
+      "id": "en-node-0",
+      "elapsedMs": 14.468041000000085,
+      "rank": 1
+    },
+    {
+      "id": "zh-preference-0",
+      "elapsedMs": 15.298249999999825,
+      "rank": 1
+    },
+    {
+      "id": "en-preference-0",
+      "elapsedMs": 17.24829200000022,
+      "rank": 1
+    },
+    {
+      "id": "error-0",
+      "elapsedMs": 15.30699999999706,
+      "rank": 1
+    },
+    {
+      "id": "conditional-0",
+      "elapsedMs": 15.795500000000175,
+      "rank": 1
+    },
+    {
+      "id": "cache-0",
+      "elapsedMs": 15.657875000000786,
+      "rank": 1
+    },
+    {
+      "id": "retry-0",
+      "elapsedMs": 14.995291999999608,
+      "rank": 1
+    },
+    {
+      "id": "result-0",
+      "elapsedMs": 15.06041600000026,
+      "rank": 1
+    },
+    {
+      "id": "quoted-0",
+      "elapsedMs": 15.017500000001746,
+      "rank": 1
+    },
+    {
+      "id": "env-0",
+      "elapsedMs": 15.286833999998635,
+      "rank": 1
+    },
+    {
+      "id": "secret-0",
+      "elapsedMs": 14.707166000000143,
+      "rank": 1
+    },
+    {
+      "id": "zh-packages-1",
+      "elapsedMs": 15.644666000000143,
+      "rank": 1
+    },
+    {
+      "id": "en-node-1",
+      "elapsedMs": 13.961250000000291,
+      "rank": 1
+    },
+    {
+      "id": "zh-preference-1",
+      "elapsedMs": 16.359040999999706,
+      "rank": 1
+    },
+    {
+      "id": "en-preference-1",
+      "elapsedMs": 15.728207999996812,
+      "rank": 1
+    },
+    {
+      "id": "error-1",
+      "elapsedMs": 14.962584000000788,
+      "rank": 1
+    },
+    {
+      "id": "conditional-1",
+      "elapsedMs": 16.089750000002823,
+      "rank": 1
+    },
+    {
+      "id": "cache-1",
+      "elapsedMs": 14.84320800000205,
+      "rank": 1
+    },
+    {
+      "id": "retry-1",
+      "elapsedMs": 15.83666699999958,
+      "rank": 1
+    },
+    {
+      "id": "result-1",
+      "elapsedMs": 15.212917000000743,
+      "rank": 1
+    },
+    {
+      "id": "quoted-1",
+      "elapsedMs": 15.256457999999839,
+      "rank": 1
+    },
+    {
+      "id": "env-1",
+      "elapsedMs": 15.613249999998516,
+      "rank": 1
+    },
+    {
+      "id": "secret-1",
+      "elapsedMs": 15.182457999999315,
+      "rank": 1
+    }
+  ],
+  "limitations": [
+    "A fixed 12-event / 24-query M0 sample, not the 40-task / 160-checkpoint release evaluation.",
+    "Field accuracy measures the public extraction adapter after conservative source-context preservation, not unconstrained model summarization.",
+    "Warm timings include only the model embedding API; they are not end-to-end hook or 5,000-memory retrieval measurements.",
+    "The available Mac has its reported physical RAM; this is not evidence for a 16 GB baseline.",
+    "No live Claude Code workload was run alongside these samples.",
+    "Preparation and first generation include cold model loading; subsequent extraction timings are warm."
+  ]
+}

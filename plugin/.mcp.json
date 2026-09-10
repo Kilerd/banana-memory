@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "banana-memory": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/runtime/dist/src/cli.js", "mcp"]
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "version": "qwen3-q8-b10809-v1",
+  "platform": "darwin",
+  "arch": "arm64",
+  "resources": [
+    {
+      "id": "generation",
+      "repository": "Qwen/Qwen3-1.7B-GGUF",
+      "revision": "90862c4b9d2787eaed51d12237eafdfe7c5f6077",
+      "filename": "Qwen3-1.7B-Q8_0.gguf",
+      "url": "https://huggingface.co/Qwen/Qwen3-1.7B-GGUF/resolve/90862c4b9d2787eaed51d12237eafdfe7c5f6077/Qwen3-1.7B-Q8_0.gguf",
+      "size": 1834426016,
+      "sha256": "061b54daade076b5d3362dac252678d17da8c68f07560be70818cace6590cb1a",
+      "license": "Apache-2.0"
+    },
+    {
+      "id": "embedding",
+      "repository": "Qwen/Qwen3-Embedding-0.6B-GGUF",
+      "revision": "370f27d7550e0def9b39c1f16d3fbaa13aa67728",
+      "filename": "Qwen3-Embedding-0.6B-Q8_0.gguf",
+      "url": "https://huggingface.co/Qwen/Qwen3-Embedding-0.6B-GGUF/resolve/370f27d7550e0def9b39c1f16d3fbaa13aa67728/Qwen3-Embedding-0.6B-Q8_0.gguf",
+      "size": 639150592,
+      "sha256": "06507c7b42688469c4e7298b0a1e16deff06caf291cf0a5b278c308249c3e439",
+      "license": "Apache-2.0"
+    },
+    {
+      "id": "runtime",
+      "repository": "ggml-org/llama.cpp",
+      "revision": "5266f24da75dc449bd56cbed7addb9c8e4a6a73e",
+      "release": "b10809",
+      "filename": "llama-b10809-bin-macos-arm64.tar.gz",
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10809/llama-b10809-bin-macos-arm64.tar.gz",
+      "size": 11123196,
+      "sha256": "7d692df9e1e386e62f1c12b843903218041e6cd74c9415aa39a7ed3176f9eaa2",
+      "license": "MIT"
+    }
+  ],
+  "runtimeExecutable": "llama-b10809/llama-server",
+  "generation": {
+    "contextTokens": 5120,
+    "inputTokens": 4096,
+    "outputTokens": 768
+  },
+  "embedding": {
+    "dimensions": 1024,
+    "pooling": "last",
+    "normalization": "l2",
+    "queryInstruction": "Given a software project question, retrieve relevant project facts, decisions and past experiences."
+  }
+}

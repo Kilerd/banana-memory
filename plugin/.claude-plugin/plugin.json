@@ -1,0 +1,8 @@
+{
+  "name": "banana-memory",
+  "version": "0.1.0",
+  "description": "Automatic local, source-grounded project memory for Claude Code.",
+  "author": { "name": "Banana Memory contributors" },
+  "license": "Apache-2.0",
+  "keywords": ["memory", "local", "claude-code"]
+}

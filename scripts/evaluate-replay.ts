@@ -102,7 +102,7 @@ try {
           await service.updateEnvironment(trusted, operation.values!);
         } else if (operation.action === 'counterexample') {
           const taskId = task.id + '-counterexample';
-          const source = await service.record(trusted, { id: taskId, taskId, role: 'user', text: `${task.event.text}\n验证失败 counterexample: ${operation.evidence}` });
+          const source = await service.record(trusted, { id: taskId, taskId, role: 'user', text: `验证失败，反例：${task.event.text} ${operation.evidence}` });
           const result = await service.feedback(trusted, { taskId, sourceIds: [source.id], text: operation.evidence! });
           if (!result.verified) throw new Error('Trusted counterexample was not verified');
         } else throw new Error(`Unknown fixture operation ${operation.action}`);

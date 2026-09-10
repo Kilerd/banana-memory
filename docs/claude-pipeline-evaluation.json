@@ -1,0 +1,116 @@
+{
+  "recordedAt": "2026-09-10T14:12:18.407Z",
+  "passed": true,
+  "node": "v22.23.1",
+  "claude": "2.1.231 (Claude Code)",
+  "platform": "darwin",
+  "arch": "arm64",
+  "totalMemoryGiB": 48,
+  "modelDirectory": "/Users/chenxin/Projects/banana-memory/.runtime/models",
+  "durationMs": 53344.386333999995,
+  "kernelPid": 85812,
+  "kernelExited": true,
+  "kernelExitMs": 5595.606874999998,
+  "sessions": [
+    {
+      "sessionId": "d45543d9-74af-46f4-95a9-82540d678dfd",
+      "exitCode": 0,
+      "elapsedMs": 1478.7429580000025
+    },
+    {
+      "sessionId": "2dbbb8e3-2740-4642-a233-73349298e73c",
+      "exitCode": 0,
+      "elapsedMs": 1385.781458000005
+    }
+  ],
+  "steps": [
+    {
+      "name": "production MCP starts its real kernel and cached local models become ready",
+      "passed": true,
+      "elapsedMs": 18221.962208,
+      "detail": {
+        "kernelPid": 85812,
+        "modelVersion": "qwen3-q8-b10809-v1",
+        "modelPhase": "ready",
+        "events": 0
+      }
+    },
+    {
+      "name": "first real Claude session receives the synthetic fact",
+      "passed": true,
+      "elapsedMs": 1478.8085410000022,
+      "detail": {
+        "sessionId": "d45543d9-74af-46f4-95a9-82540d678dfd",
+        "exitCode": 0,
+        "elapsedMs": 1478.7429580000025
+      }
+    },
+    {
+      "name": "Stop triggers real extraction, real embeddings and durable source-backed memory",
+      "passed": true,
+      "elapsedMs": 26645.016042000003,
+      "detail": {
+        "id": "m:2b9ebee348140dd9d2e5fa138f0c6b5e69a47b85e9579dae88127191684a579d",
+        "sources": [
+          "e:eb112bff540b2fe36f9f47081eca42a60cbeb124ce188916259c7fe3b8273213"
+        ],
+        "queue": 0,
+        "events": 3,
+        "memories": 3,
+        "vectorDimensions": 1024
+      }
+    },
+    {
+      "name": "second independent Claude session automatically receives the fact and source label",
+      "passed": true,
+      "elapsedMs": 1386.077333000001,
+      "detail": {
+        "memoryId": "m:2b9ebee348140dd9d2e5fa138f0c6b5e69a47b85e9579dae88127191684a579d",
+        "secondSessionId": "2dbbb8e3-2740-4642-a233-73349298e73c",
+        "sourceLabelDelivered": true,
+        "sameKernel": true,
+        "apiRequests": 2
+      }
+    }
+  ],
+  "injectedRequests": [
+    {
+      "session": 1,
+      "factPresent": false,
+      "sourcePresent": false,
+      "evidenceLabelPresent": false
+    },
+    {
+      "session": 1,
+      "factPresent": true,
+      "sourcePresent": false,
+      "evidenceLabelPresent": false
+    },
+    {
+      "session": 2,
+      "factPresent": false,
+      "sourcePresent": false,
+      "evidenceLabelPresent": false
+    },
+    {
+      "session": 2,
+      "factPresent": true,
+      "sourcePresent": true,
+      "evidenceLabelPresent": true
+    }
+  ],
+  "externalRequests": 0,
+  "localRequests": {
+    "/health": 346,
+    "/v1/embeddings:query": 3,
+    "/tokenize": 10,
+    "/apply-template": 5,
+    "/v1/chat/completions": 5,
+    "/v1/embeddings:document": 4
+  },
+  "limitations": [
+    "Claude cloud transport uses a loopback response fixture. Production kernel, backend, LanceDB and both local models are real.",
+    "One synthetic fact and two real Claude sessions are an integration smoke, not the 16 GB hardware gate or a quality benchmark.",
+    "The offline guard denies product Node fetch requests outside 127.0.0.1; this is not an operating-system network capture."
+  ]
+}

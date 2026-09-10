@@ -20,6 +20,10 @@ export interface EventData extends Record<string, unknown> {
   root: string; occurredAt: string; receivedAt: string; trusted: boolean;
   truncated: boolean; filtered: boolean; filterReasons: string[];
 }
+export function isDirectUserStatement(event: EventData): boolean {
+  return event.trusted && event.role === 'user' && !event.truncated && !event.filtered &&
+    !/(^\s*[>"“‘]|```|\b(?:quoted|pasted|third.party|user_confirmed|said|says|wrote|according to|README)\b|引用|转述|第三方|别人说|文档中|文章中|他说|她说)/im.test(event.text);
+}
 export interface MemoryData extends Record<string, unknown> {
   type: MemoryType; text: string; state: MemoryState; conditions: string[]; sources: string[];
   environment: Record<string, string>; createdAt: string; updatedAt: string;
@@ -51,4 +55,22 @@ export function ageWeight(memory: MemoryData, now: number): number {
   if (memory.pinned || memory.type === 'fact' || memory.type === 'preference') return 1;
   const days = Math.max(0, now - Date.parse(memory.updatedAt)) / 86400_000;
   return Math.pow(0.5, days / (memory.type === 'episode' ? 30 : 90));
+}
+
+/** Recognize a narrow, explicit outcome declaration, never a keyword mention.
+ * Callers must still establish trusted direct-user provenance independently.
+ * Negated domain conditions (for example "不得删除数据") remain valid evidence.
+ */
+export function classifyOutcome(text: string): 'success' | 'failure' | 'unverified' {
+  const statement = text.trim();
+  if (!statement || /[\r\n?？]/u.test(statement)) return 'unverified';
+  const declaration = /^(验证通过|结果符合预期|verified success|verified outcome|验证失败(?:\s*[，,]\s*反例)?|反例|verified failure|counterexample)\s*[:：]\s*(\S[\s\S]*)$/iu.exec(statement);
+  if (!declaration) return 'unverified';
+  const body = declaration[2]!;
+  // Contradictory outcome language is different from restrictions on an action.
+  if (/^(?:尚未|还未|并未|从未|没有|未能|无法|未)(?:验证(?:通过|成功|完成)|确认(?:成功|结果)|完成验证)/u.test(body) ||
+      /^(?:(?:we|i)\s+(?:have\s+|did\s+)?not\s+|not\s+(?:yet\s+)?|never\s+)(?:verified|verify|confirmed|confirm)\b/iu.test(body) ||
+      /^(?:unverified|pending verification|not (?:yet )?(?:successful|complete|completed))\b/iu.test(body) ||
+      /^(?:是否|是不是|能否|可否|难道)/u.test(body) || /^(?:can|could|did|do|does|should|would|will|is|are|has|have)\s/iu.test(body)) return 'unverified';
+  return /^(?:验证通过|结果符合预期|verified success|verified outcome)$/iu.test(declaration[1]!) ? 'success' : 'failure';
 }

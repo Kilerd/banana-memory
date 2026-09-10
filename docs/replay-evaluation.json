@@ -1,0 +1,1990 @@
+{
+  "version": "replay-v1",
+  "executedAt": "2026-09-10T14:24:28.093Z",
+  "status": "passed",
+  "scope": "Deterministic model-output replay through the real Memory Service and LanceDB. Measures consistency, not real-model quality or production Recall@6.",
+  "tasks": 40,
+  "checkpoints": 160,
+  "passedCheckpoints": 160,
+  "projects": 2,
+  "scenarios": [
+    "baseline",
+    "retry",
+    "correction",
+    "delete",
+    "pause",
+    "untrusted",
+    "environment",
+    "aging",
+    "pin",
+    "counterexample"
+  ],
+  "expectedPositiveMemories": 84,
+  "retrievedPositiveMemories": 84,
+  "fixtureRecallAt6": 1,
+  "sourceChecks": 680,
+  "sourceFailures": 0,
+  "crossProjectLeaks": 0,
+  "deletedLeaks": 0,
+  "correctedLeaks": 0,
+  "duplicateAttempts": 80,
+  "physicalPurges": 4,
+  "failures": [],
+  "observations": [
+    {
+      "checkpoint": "CASE_01-initial",
+      "scenario": "baseline",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a"
+      ],
+      "latencyMs": 8.867541999999986,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_01-isolated",
+      "scenario": "baseline",
+      "returnedIds": [],
+      "latencyMs": 1.6735830000000078,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_01-changed",
+      "scenario": "baseline",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a"
+      ],
+      "latencyMs": 6.181749999999994,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_01-recovered",
+      "scenario": "baseline",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a"
+      ],
+      "latencyMs": 6.451624999999979,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_02-initial",
+      "scenario": "baseline",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44"
+      ],
+      "latencyMs": 7.651999999999987,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_02-isolated",
+      "scenario": "baseline",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a"
+      ],
+      "latencyMs": 6.320333000000005,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_02-changed",
+      "scenario": "baseline",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44"
+      ],
+      "latencyMs": 6.147874999999999,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_02-recovered",
+      "scenario": "baseline",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44"
+      ],
+      "latencyMs": 6.308708000000024,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_03-initial",
+      "scenario": "baseline",
+      "returnedIds": [
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a"
+      ],
+      "latencyMs": 7.070790999999986,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_03-isolated",
+      "scenario": "baseline",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44"
+      ],
+      "latencyMs": 6.6515830000000165,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_03-changed",
+      "scenario": "baseline",
+      "returnedIds": [
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a"
+      ],
+      "latencyMs": 6.5125830000000065,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_03-recovered",
+      "scenario": "baseline",
+      "returnedIds": [
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a"
+      ],
+      "latencyMs": 8.459582999999952,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_04-initial",
+      "scenario": "baseline",
+      "returnedIds": [
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44"
+      ],
+      "latencyMs": 7.095834000000025,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_04-isolated",
+      "scenario": "baseline",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0"
+      ],
+      "latencyMs": 7.192000000000007,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_04-changed",
+      "scenario": "baseline",
+      "returnedIds": [
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44"
+      ],
+      "latencyMs": 7.068957999999952,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_04-recovered",
+      "scenario": "baseline",
+      "returnedIds": [
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44"
+      ],
+      "latencyMs": 7.167291000000034,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_05-initial",
+      "scenario": "retry",
+      "returnedIds": [
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0"
+      ],
+      "latencyMs": 7.549874999999986,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_05-isolated",
+      "scenario": "retry",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78"
+      ],
+      "latencyMs": 7.269749999999988,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_05-changed",
+      "scenario": "retry",
+      "returnedIds": [
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0"
+      ],
+      "latencyMs": 7.519416999999976,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_05-recovered",
+      "scenario": "retry",
+      "returnedIds": [
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0"
+      ],
+      "latencyMs": 6.937041999999963,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_06-initial",
+      "scenario": "retry",
+      "returnedIds": [
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78"
+      ],
+      "latencyMs": 7.525874999999985,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_06-isolated",
+      "scenario": "retry",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85"
+      ],
+      "latencyMs": 7.769542000000001,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_06-changed",
+      "scenario": "retry",
+      "returnedIds": [
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78"
+      ],
+      "latencyMs": 9.552416999999991,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_06-recovered",
+      "scenario": "retry",
+      "returnedIds": [
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78"
+      ],
+      "latencyMs": 9.152874999999995,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_07-initial",
+      "scenario": "retry",
+      "returnedIds": [
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85"
+      ],
+      "latencyMs": 7.727040999999986,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_07-isolated",
+      "scenario": "retry",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb"
+      ],
+      "latencyMs": 7.644084000000021,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_07-changed",
+      "scenario": "retry",
+      "returnedIds": [
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85"
+      ],
+      "latencyMs": 7.707125000000019,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_07-recovered",
+      "scenario": "retry",
+      "returnedIds": [
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85"
+      ],
+      "latencyMs": 8.425333000000023,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_08-initial",
+      "scenario": "retry",
+      "returnedIds": [
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb"
+      ],
+      "latencyMs": 8.139125000000035,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_08-isolated",
+      "scenario": "retry",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac"
+      ],
+      "latencyMs": 8.218082999999979,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_08-changed",
+      "scenario": "retry",
+      "returnedIds": [
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb"
+      ],
+      "latencyMs": 10.483875000000012,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_08-recovered",
+      "scenario": "retry",
+      "returnedIds": [
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb"
+      ],
+      "latencyMs": 8.548332999999957,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_09-initial",
+      "scenario": "correction",
+      "returnedIds": [
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac"
+      ],
+      "latencyMs": 11.48350000000005,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_09-isolated",
+      "scenario": "correction",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f"
+      ],
+      "latencyMs": 11.788625000000025,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_09-changed",
+      "scenario": "correction",
+      "returnedIds": [
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac"
+      ],
+      "latencyMs": 9.270708000000013,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_09-recovered",
+      "scenario": "correction",
+      "returnedIds": [
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac"
+      ],
+      "latencyMs": 11.443750000000023,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_10-initial",
+      "scenario": "correction",
+      "returnedIds": [
+        "m:8311e7099d8888e5b841ab6cab44884b6376d523c8be0e62fa084ded24d61889",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f"
+      ],
+      "latencyMs": 9.496792000000028,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_10-isolated",
+      "scenario": "correction",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 9.500082999999904,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_10-changed",
+      "scenario": "correction",
+      "returnedIds": [
+        "m:8311e7099d8888e5b841ab6cab44884b6376d523c8be0e62fa084ded24d61889",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb"
+      ],
+      "latencyMs": 8.760125000000016,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_10-recovered",
+      "scenario": "correction",
+      "returnedIds": [
+        "m:8311e7099d8888e5b841ab6cab44884b6376d523c8be0e62fa084ded24d61889",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb"
+      ],
+      "latencyMs": 9.057790999999952,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_11-initial",
+      "scenario": "correction",
+      "returnedIds": [
+        "m:9bbecbed16f0d0bd8e4593891f16cb458dc76555e292765219b90c7e74a93ba5",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac"
+      ],
+      "latencyMs": 10.023208000000068,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_11-isolated",
+      "scenario": "correction",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f"
+      ],
+      "latencyMs": 9.423125000000027,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_11-changed",
+      "scenario": "correction",
+      "returnedIds": [
+        "m:9bbecbed16f0d0bd8e4593891f16cb458dc76555e292765219b90c7e74a93ba5",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac"
+      ],
+      "latencyMs": 9.51708300000007,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_11-recovered",
+      "scenario": "correction",
+      "returnedIds": [
+        "m:9bbecbed16f0d0bd8e4593891f16cb458dc76555e292765219b90c7e74a93ba5",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac"
+      ],
+      "latencyMs": 9.877417000000037,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_12-initial",
+      "scenario": "correction",
+      "returnedIds": [
+        "m:b08b5fc296c227f2d5906a0e23a98af203c6f6ef9dc54dbec592059de40af24d",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f"
+      ],
+      "latencyMs": 10.204207999999994,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_12-isolated",
+      "scenario": "correction",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 9.627958000000035,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_12-changed",
+      "scenario": "correction",
+      "returnedIds": [
+        "m:b08b5fc296c227f2d5906a0e23a98af203c6f6ef9dc54dbec592059de40af24d",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb"
+      ],
+      "latencyMs": 10.584833000000003,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_12-recovered",
+      "scenario": "correction",
+      "returnedIds": [
+        "m:b08b5fc296c227f2d5906a0e23a98af203c6f6ef9dc54dbec592059de40af24d",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb"
+      ],
+      "latencyMs": 10.885125000000016,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_13-initial",
+      "scenario": "delete",
+      "returnedIds": [
+        "m:e13b7ae2cd480fb6ff134c5338a322da95dc2c890dc170248ce8249e46e4a9c9",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac"
+      ],
+      "latencyMs": 11.598250000000007,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_13-isolated",
+      "scenario": "delete",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f"
+      ],
+      "latencyMs": 11.103459000000157,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_13-changed",
+      "scenario": "delete",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 6.222291999999925,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_13-recovered",
+      "scenario": "delete",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 5.760540999999876,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_14-initial",
+      "scenario": "delete",
+      "returnedIds": [
+        "m:e510e712218eed36ed16c105166dfd4437448e09f951eee211538aebf7c71d59",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb"
+      ],
+      "latencyMs": 5.8769589999999425,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_14-isolated",
+      "scenario": "delete",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 5.688417000000072,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_14-changed",
+      "scenario": "delete",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f"
+      ],
+      "latencyMs": 5.968208000000004,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_14-recovered",
+      "scenario": "delete",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f"
+      ],
+      "latencyMs": 5.63170799999989,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_15-initial",
+      "scenario": "delete",
+      "returnedIds": [
+        "m:22a941c45323070a3e3971f0e24fa97d6f46fee14797d3fdab7debcdfd03a4df",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac"
+      ],
+      "latencyMs": 5.771124999999984,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_15-isolated",
+      "scenario": "delete",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f"
+      ],
+      "latencyMs": 5.26820900000007,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_15-changed",
+      "scenario": "delete",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 5.755833000000166,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_15-recovered",
+      "scenario": "delete",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 5.647416000000021,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_16-initial",
+      "scenario": "delete",
+      "returnedIds": [
+        "m:8aa9ae322021e762ac19ad69541901e2fa0314ced7d8dcd62357b1b5cf171415",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb"
+      ],
+      "latencyMs": 6.7811249999999745,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_16-isolated",
+      "scenario": "delete",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 5.686958000000004,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_16-changed",
+      "scenario": "delete",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f"
+      ],
+      "latencyMs": 14.253333000000111,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_16-recovered",
+      "scenario": "delete",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f"
+      ],
+      "latencyMs": 6.498166000000083,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_17-initial",
+      "scenario": "pause",
+      "returnedIds": [
+        "m:1e6dbf3fb2ef3939c555cafe0ecfcd9e48b2d3d208d613452f2c3ce844b23dcf",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac"
+      ],
+      "latencyMs": 6.475875000000087,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_17-isolated",
+      "scenario": "pause",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f"
+      ],
+      "latencyMs": 5.670250000000124,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_17-changed",
+      "scenario": "pause",
+      "returnedIds": [],
+      "degradation": "PAUSED",
+      "latencyMs": 0.017542000000048574,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_17-recovered",
+      "scenario": "pause",
+      "returnedIds": [
+        "m:1e6dbf3fb2ef3939c555cafe0ecfcd9e48b2d3d208d613452f2c3ce844b23dcf",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac"
+      ],
+      "latencyMs": 6.2557919999999285,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_18-initial",
+      "scenario": "pause",
+      "returnedIds": [
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f"
+      ],
+      "latencyMs": 6.582709000000023,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_18-isolated",
+      "scenario": "pause",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 6.526207999999997,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_18-changed",
+      "scenario": "pause",
+      "returnedIds": [],
+      "degradation": "PAUSED",
+      "latencyMs": 0.014208000000053289,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_18-recovered",
+      "scenario": "pause",
+      "returnedIds": [
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f"
+      ],
+      "latencyMs": 7.494791999999961,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_19-initial",
+      "scenario": "pause",
+      "returnedIds": [
+        "m:28a68006f6b0a9dc8bd4de62bed53952ab9d3515c3546639541736ed7793d0db",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac"
+      ],
+      "latencyMs": 6.959875000000011,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_19-isolated",
+      "scenario": "pause",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 6.980834000000186,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_19-changed",
+      "scenario": "pause",
+      "returnedIds": [],
+      "degradation": "PAUSED",
+      "latencyMs": 0.013666999999941254,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_19-recovered",
+      "scenario": "pause",
+      "returnedIds": [
+        "m:28a68006f6b0a9dc8bd4de62bed53952ab9d3515c3546639541736ed7793d0db",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac"
+      ],
+      "latencyMs": 6.6563330000001315,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_20-initial",
+      "scenario": "pause",
+      "returnedIds": [
+        "m:9938c2f4a21582ec29cd6d5bdb996461c98dfbd0f7596d4c323a7487f2391ce9",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f"
+      ],
+      "latencyMs": 7.074457999999822,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_20-isolated",
+      "scenario": "pause",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 6.967292000000043,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_20-changed",
+      "scenario": "pause",
+      "returnedIds": [],
+      "degradation": "PAUSED",
+      "latencyMs": 0.03462500000000546,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_20-recovered",
+      "scenario": "pause",
+      "returnedIds": [
+        "m:9938c2f4a21582ec29cd6d5bdb996461c98dfbd0f7596d4c323a7487f2391ce9",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f"
+      ],
+      "latencyMs": 7.361541999999872,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_21-initial",
+      "scenario": "untrusted",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 7.255999999999858,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_21-isolated",
+      "scenario": "untrusted",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 7.246209000000135,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_21-changed",
+      "scenario": "untrusted",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 7.3928339999999935,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_21-recovered",
+      "scenario": "untrusted",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 8.85525000000007,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_22-initial",
+      "scenario": "untrusted",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 8.03129100000001,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_22-isolated",
+      "scenario": "untrusted",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 8.00958300000002,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_22-changed",
+      "scenario": "untrusted",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 8.011833000000024,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_22-recovered",
+      "scenario": "untrusted",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 8.316084000000046,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_23-initial",
+      "scenario": "untrusted",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 8.752958000000035,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_23-isolated",
+      "scenario": "untrusted",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 9.75758299999984,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_23-changed",
+      "scenario": "untrusted",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 8.621083999999883,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_23-recovered",
+      "scenario": "untrusted",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 8.710749999999962,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_24-initial",
+      "scenario": "untrusted",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 8.915917000000036,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_24-isolated",
+      "scenario": "untrusted",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 8.706916999999976,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_24-changed",
+      "scenario": "untrusted",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 8.991375000000062,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_24-recovered",
+      "scenario": "untrusted",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 9.597082999999884,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_25-initial",
+      "scenario": "environment",
+      "returnedIds": [
+        "m:30fbeac451223c54abd4abab20d4c1ed9cde42a313d674019688c86a95b78c2f",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1e6dbf3fb2ef3939c555cafe0ecfcd9e48b2d3d208d613452f2c3ce844b23dcf"
+      ],
+      "latencyMs": 9.14166699999987,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_25-isolated",
+      "scenario": "environment",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 9.192000000000007,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_25-changed",
+      "scenario": "environment",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 8.797458000000006,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_25-recovered",
+      "scenario": "environment",
+      "returnedIds": [
+        "m:30fbeac451223c54abd4abab20d4c1ed9cde42a313d674019688c86a95b78c2f",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1e6dbf3fb2ef3939c555cafe0ecfcd9e48b2d3d208d613452f2c3ce844b23dcf"
+      ],
+      "latencyMs": 9.211000000000013,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_26-initial",
+      "scenario": "environment",
+      "returnedIds": [
+        "m:422547ca70ff7f1fbfdebcda848ad32e51035a64462601c890862c3efdf482a8",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb"
+      ],
+      "latencyMs": 9.189208000000008,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_26-isolated",
+      "scenario": "environment",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 8.981833999999935,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_26-changed",
+      "scenario": "environment",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 8.768624999999929,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_26-recovered",
+      "scenario": "environment",
+      "returnedIds": [
+        "m:422547ca70ff7f1fbfdebcda848ad32e51035a64462601c890862c3efdf482a8",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb"
+      ],
+      "latencyMs": 10.197916999999961,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_27-initial",
+      "scenario": "environment",
+      "returnedIds": [
+        "m:a13ae65facace2f9028e7f713bbf27ddf700b68de0ce4c03472d46b48e5eecc3",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac"
+      ],
+      "latencyMs": 9.678791999999703,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_27-isolated",
+      "scenario": "environment",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 9.85787500000015,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_27-changed",
+      "scenario": "environment",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 9.894999999999982,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_27-recovered",
+      "scenario": "environment",
+      "returnedIds": [
+        "m:a13ae65facace2f9028e7f713bbf27ddf700b68de0ce4c03472d46b48e5eecc3",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac"
+      ],
+      "latencyMs": 10.96591699999999,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_28-initial",
+      "scenario": "environment",
+      "returnedIds": [
+        "m:4915fc5e6985898d1c6725d4455fc5c08e39db141fef61c4409c60e2ec77bde7",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb"
+      ],
+      "latencyMs": 10.870958999999857,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_28-isolated",
+      "scenario": "environment",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 10.6271670000001,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_28-changed",
+      "scenario": "environment",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 10.311249999999745,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_28-recovered",
+      "scenario": "environment",
+      "returnedIds": [
+        "m:4915fc5e6985898d1c6725d4455fc5c08e39db141fef61c4409c60e2ec77bde7",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb"
+      ],
+      "latencyMs": 11.653459000000112,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_29-initial",
+      "scenario": "aging",
+      "returnedIds": [
+        "m:7d8cd6836c5f1a81aff4752e9c342003591c385c19caf2f8178e93969bd18af0",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac"
+      ],
+      "latencyMs": 10.892291999999998,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_29-isolated",
+      "scenario": "aging",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 10.514541000000008,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_29-changed",
+      "scenario": "aging",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 10.673459000000094,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_29-recovered",
+      "scenario": "aging",
+      "returnedIds": [
+        "m:7d8cd6836c5f1a81aff4752e9c342003591c385c19caf2f8178e93969bd18af0",
+        "m:30fbeac451223c54abd4abab20d4c1ed9cde42a313d674019688c86a95b78c2f",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0"
+      ],
+      "latencyMs": 11.42687500000011,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_30-initial",
+      "scenario": "aging",
+      "returnedIds": [
+        "m:bbc5ae831e80fdd53901fd01eecabcce2fda050390dd9870e3d223af1fa749d4",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 11.136582999999973,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_30-isolated",
+      "scenario": "aging",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 12.093582999999853,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_30-changed",
+      "scenario": "aging",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 10.854624999999942,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_30-recovered",
+      "scenario": "aging",
+      "returnedIds": [
+        "m:bbc5ae831e80fdd53901fd01eecabcce2fda050390dd9870e3d223af1fa749d4",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 11.583042000000205,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_31-initial",
+      "scenario": "aging",
+      "returnedIds": [
+        "m:82669e986cc6a356e6db7012105cdfcca19a5bd67c2fc39920d898088b9b34b3",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac"
+      ],
+      "latencyMs": 14.310124999999971,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_31-isolated",
+      "scenario": "aging",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 11.065624999999727,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_31-changed",
+      "scenario": "aging",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 11.449125000000095,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_31-recovered",
+      "scenario": "aging",
+      "returnedIds": [
+        "m:82669e986cc6a356e6db7012105cdfcca19a5bd67c2fc39920d898088b9b34b3",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac"
+      ],
+      "latencyMs": 14.663750000000164,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_32-initial",
+      "scenario": "aging",
+      "returnedIds": [
+        "m:6ed1b09bc6bf4a72f23fc6d5ea00b23c88f3dc9a28e1f777e9f53f100e242329",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 11.888832999999977,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_32-isolated",
+      "scenario": "aging",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 12.283582999999908,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_32-changed",
+      "scenario": "aging",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 12.249499999999898,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_32-recovered",
+      "scenario": "aging",
+      "returnedIds": [
+        "m:6ed1b09bc6bf4a72f23fc6d5ea00b23c88f3dc9a28e1f777e9f53f100e242329",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 12.97524999999996,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_33-initial",
+      "scenario": "pin",
+      "returnedIds": [
+        "m:c53b288dd99b6e7749a0236310042dc7d2977663382ce77ffa7ab82f4695b8c4",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac"
+      ],
+      "latencyMs": 12.932041000000027,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_33-isolated",
+      "scenario": "pin",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 12.767957999999908,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_33-changed",
+      "scenario": "pin",
+      "returnedIds": [
+        "m:c53b288dd99b6e7749a0236310042dc7d2977663382ce77ffa7ab82f4695b8c4",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac"
+      ],
+      "latencyMs": 12.452249999999822,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_33-recovered",
+      "scenario": "pin",
+      "returnedIds": [
+        "m:c53b288dd99b6e7749a0236310042dc7d2977663382ce77ffa7ab82f4695b8c4",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac"
+      ],
+      "latencyMs": 13.230540999999903,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_34-initial",
+      "scenario": "pin",
+      "returnedIds": [
+        "m:16f0c4bcbbc5cad194f0e8ee7e335bd713541883e9daeab4097f6e8175d32da2",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 12.107665999999881,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_34-isolated",
+      "scenario": "pin",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 11.969790999999987,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_34-changed",
+      "scenario": "pin",
+      "returnedIds": [
+        "m:16f0c4bcbbc5cad194f0e8ee7e335bd713541883e9daeab4097f6e8175d32da2",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 12.341290999999728,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_34-recovered",
+      "scenario": "pin",
+      "returnedIds": [
+        "m:16f0c4bcbbc5cad194f0e8ee7e335bd713541883e9daeab4097f6e8175d32da2",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 15.010874999999942,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_35-initial",
+      "scenario": "pin",
+      "returnedIds": [
+        "m:bdde71dbf7d415eb60ce8595c6c2a8f91ff326aad55e5ea177076463b7bada5a",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac"
+      ],
+      "latencyMs": 15.887417000000369,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_35-isolated",
+      "scenario": "pin",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 12.650666000000001,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_35-changed",
+      "scenario": "pin",
+      "returnedIds": [
+        "m:bdde71dbf7d415eb60ce8595c6c2a8f91ff326aad55e5ea177076463b7bada5a",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac"
+      ],
+      "latencyMs": 14.558999999999742,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_35-recovered",
+      "scenario": "pin",
+      "returnedIds": [
+        "m:bdde71dbf7d415eb60ce8595c6c2a8f91ff326aad55e5ea177076463b7bada5a",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac"
+      ],
+      "latencyMs": 14.823125000000346,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_36-initial",
+      "scenario": "pin",
+      "returnedIds": [
+        "m:393af464f339f84fbe1c057d0e1d2aae373bbbc9653fc65693a6ffc56f671ee0",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f"
+      ],
+      "latencyMs": 13.6740420000001,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_36-isolated",
+      "scenario": "pin",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 13.694875000000138,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_36-changed",
+      "scenario": "pin",
+      "returnedIds": [
+        "m:393af464f339f84fbe1c057d0e1d2aae373bbbc9653fc65693a6ffc56f671ee0",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f"
+      ],
+      "latencyMs": 18.357958000000053,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_36-recovered",
+      "scenario": "pin",
+      "returnedIds": [
+        "m:393af464f339f84fbe1c057d0e1d2aae373bbbc9653fc65693a6ffc56f671ee0",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f"
+      ],
+      "latencyMs": 16.95520899999974,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_37-initial",
+      "scenario": "counterexample",
+      "returnedIds": [
+        "m:cc76dc5fe59dc8fde179dd643d254aee45c9f572bf5d9965b31c28c494f213a8",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac"
+      ],
+      "latencyMs": 13.463125000000218,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_37-isolated",
+      "scenario": "counterexample",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 13.80495800000017,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_37-changed",
+      "scenario": "counterexample",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 14.176582999999937,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_37-recovered",
+      "scenario": "counterexample",
+      "returnedIds": [
+        "m:cc76dc5fe59dc8fde179dd643d254aee45c9f572bf5d9965b31c28c494f213a8",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac"
+      ],
+      "latencyMs": 13.841249999999945,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_38-initial",
+      "scenario": "counterexample",
+      "returnedIds": [
+        "m:fed17e5a3ee166a8e5f2d4150178ba35ffc5db55e78b82338105dc2935bc971b",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 15.213082999999642,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_38-isolated",
+      "scenario": "counterexample",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 14.89758299999994,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_38-changed",
+      "scenario": "counterexample",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 14.83158400000002,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_38-recovered",
+      "scenario": "counterexample",
+      "returnedIds": [
+        "m:fed17e5a3ee166a8e5f2d4150178ba35ffc5db55e78b82338105dc2935bc971b",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 14.983999999999924,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_39-initial",
+      "scenario": "counterexample",
+      "returnedIds": [
+        "m:f2758c7f4f98b91627cd5f5ebc9d1d9fddd0a6aa9de37e53f5141a8bbd1cb2fc",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac"
+      ],
+      "latencyMs": 15.416917000000012,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_39-isolated",
+      "scenario": "counterexample",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 15.489374999999654,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_39-changed",
+      "scenario": "counterexample",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 14.643125000000055,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_39-recovered",
+      "scenario": "counterexample",
+      "returnedIds": [
+        "m:f2758c7f4f98b91627cd5f5ebc9d1d9fddd0a6aa9de37e53f5141a8bbd1cb2fc",
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac"
+      ],
+      "latencyMs": 15.082625000000007,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_40-initial",
+      "scenario": "counterexample",
+      "returnedIds": [
+        "m:d304f4cd550f75c92d355ecd757acfbbe0d5f137b7bd06e90a414224c91c9c1d",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 15.799459000000297,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_40-isolated",
+      "scenario": "counterexample",
+      "returnedIds": [
+        "m:0069e4fa875ff58be4fa0543514022d0e0497c2ee35622f0a32ab9fe5ca4f06a",
+        "m:bede40962ae0d00b3df9b786408fda2e9166b5a2a2d4e2e7ddf98f03c660e3c0",
+        "m:7a2420bf639f6d2caff3bf830805c59907b0099c6dfd643d7c6d68dfa8a19a85",
+        "m:1dd755375a6a90e79042fcc66c61eea795dc4e037066209af6767262691234ac",
+        "m:d2e7bf3ed633e548de3fba39a439a47092e7680584a866f1cab58d5f31baeb08"
+      ],
+      "latencyMs": 16.668500000000222,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_40-changed",
+      "scenario": "counterexample",
+      "returnedIds": [
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:b08a523d6d53c4316bed7978d818dee3c3f4fcf57158bf3401f76ddc3fceba4f",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 16.087082999999893,
+      "passed": true
+    },
+    {
+      "checkpoint": "CASE_40-recovered",
+      "scenario": "counterexample",
+      "returnedIds": [
+        "m:d304f4cd550f75c92d355ecd757acfbbe0d5f137b7bd06e90a414224c91c9c1d",
+        "m:28e4bf99659349c21dda8aafb000924a185e313a4067e688096b7e5b22f28d44",
+        "m:805a8d0999bdec5e5f914fb350569240c394ccd33d47fa1207a156cd9449dd78",
+        "m:00279d3a1a87c3b234f527cd829582139f5af09f934193a8d19c4b23b7ab9deb",
+        "m:fdd2f36cf386b07e05847b46fdb59f089af3bbb830c990e4a3a33f8cdfcd6b0a"
+      ],
+      "latencyMs": 17.042374999999993,
+      "passed": true
+    }
+  ]
+}

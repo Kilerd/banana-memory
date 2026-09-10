@@ -1,0 +1,110 @@
+{
+  "executedAt": "2026-09-10T14:22:26.826Z",
+  "status": "completed",
+  "startedAt": "2026-09-10T14:22:15.646Z",
+  "sourceFileSha256": {
+    "src/backend.ts": "6998bf7dddba35cb89c7796314761b266da11aea272fd84a4f67f566bb106409",
+    "src/cli.ts": "8c37fc1b533cd3ccc4b91d28cf87b8f2a4ae63cb1d26683f98f9c6ed7bc933ee",
+    "src/consolidation.ts": "da50634d3fc254cb9749107890c5b3901730efe93e308ff4418ff8392f88ced8",
+    "src/domain.ts": "5af780039fa0e7d0f3c6026ed892e218c3495d00adb3cda5f593c115d6434dc9",
+    "src/host/adapter.ts": "f5d5a710cf9b4bf33f11de73c35dac9d5cbc735d9fc697dfb6b05ae3646c36f2",
+    "src/host/contracts.ts": "fa1de65b248643d88cda19d2fc764350bd8304017a9be2cbe704c19349ae15bb",
+    "src/host/errors.ts": "0141a1c27a9eb84817fd3e1c3db56a68375d89908a9f4c3921a17d0c0805792b",
+    "src/host/hook.ts": "9c514ce7a6f6febc9d30286c4259b98ee103c1d34573d8449c9712b88f972f13",
+    "src/host/ipc.ts": "b221333dab126f57dba40cd28520c64fe92095ea6322edfac32ca6b33ce5dc82",
+    "src/host/kernel.ts": "042ecc824f7c52babdc0c43f213d2be1df28cfa126a6bd2870415af84c4e0909",
+    "src/host/mcp.ts": "f5d94a5e2726167269e37dc011ddd412643ed24fc0ba17148541807cde3e1c82",
+    "src/host/version.ts": "66b6601699809bf11234b17b88bc09ac17dd8deecbb84be6de7afbb6eb602028",
+    "src/models/download.ts": "8453525a2ccdb3ed44dfb5e0045cbe3e60a3a130acdc3e00ebf7958ebf9065fd",
+    "src/models/index.ts": "69ee589b53ed20e76a3c6abed6775783b13ac806e6a5d95db04dabe945fc363d",
+    "src/models/supervisor.ts": "4cf12e4dfad0defcb0a51e5843d79bffa2058a96e7596d50ff75957f9ea32108",
+    "src/models/types.ts": "695280f6559a543b2a10a666478884438187f9e64cde841f5818438d51a68e02",
+    "src/runtime-names.ts": "5f1c44753a157df4831b37a853a4fb4d0a09d39d6d4d841bc107be75b1d84fb1",
+    "src/service.ts": "daf6d67b305fdc92fef454354c6b11597b52fd32aac3b7efb5a60d8b36bfd6ec",
+    "src/store.ts": "effab0c6c87e6c2de395ec30e8b0e8a79a6b744a17c597823cba1b29e634b13f",
+    "scripts/benchmark.ts": "fb60eabead6321afc1a694bfa47559c16023de27c3b952e35f85283ab6bad41e",
+    "scripts/fixture-models.ts": "76a1d690a9e048d12964f68677afd79464c682a3255376b5d1acbe45cf2d6abe",
+    "models/manifest.json": "a77c0ed093ab1cc41ae4ba2c91ddadfbea970bafba953a78d304fe29130cee48"
+  },
+  "phase": "queries-on-existing-service-dataset",
+  "datasetOrigin": {
+    "directory": "/tmp/banana-benchmark-real-final",
+    "seedReportPath": "/Users/chenxin/Projects/banana-memory/docs/benchmark-seed.json",
+    "seedStartedAt": "2026-09-10T14:09:22.584Z",
+    "seedSourceFileSha256": {
+      "src/service.ts": "c38623c5387215babc76e81211180143a295fa38435b87bf09241c8daac30190",
+      "src/store.ts": "effab0c6c87e6c2de395ec30e8b0e8a79a6b744a17c597823cba1b29e634b13f",
+      "src/domain.ts": "86898f111c2aa9354156a77f486bfb430777f3037d2547d387735ba7bee7d6fa",
+      "src/consolidation.ts": "345f40cf8f8930ec9972eb2937955ab350ccd75a917b7fe253d4cd0acb16aef2",
+      "src/models/index.ts": "69ee589b53ed20e76a3c6abed6775783b13ac806e6a5d95db04dabe945fc363d",
+      "src/models/download.ts": "8453525a2ccdb3ed44dfb5e0045cbe3e60a3a130acdc3e00ebf7958ebf9065fd",
+      "src/models/types.ts": "695280f6559a543b2a10a666478884438187f9e64cde841f5818438d51a68e02",
+      "scripts/benchmark.ts": "c1dbe4f3cd1f8cab813da6d3dfcec1b6a140e3034bc07f3caf777fea0c0e8e21",
+      "scripts/fixture-models.ts": "76a1d690a9e048d12964f68677afd79464c682a3255376b5d1acbe45cf2d6abe",
+      "models/manifest.json": "a77c0ed093ab1cc41ae4ba2c91ddadfbea970bafba953a78d304fe29130cee48"
+    }
+  },
+  "mode": "fixture-extraction-with-real-local-embedding",
+  "scope": "Dataset populated through MemoryService.record and processPending; timed recall includes query embedding, authoritative scope/state checks, bundle persistence and delivery checks. No Claude client or hook adapter timing.",
+  "machine": {
+    "cpu": "Apple M4 Pro",
+    "memoryGiB": 48,
+    "platform": "darwin",
+    "arch": "arm64",
+    "node": "v22.23.1"
+  },
+  "dataset": {
+    "events": 20000,
+    "memories": 5000,
+    "concurrentSessions": 2,
+    "projects": 2,
+    "remainingJobs": 0,
+    "remainingVectorJobs": 0
+  },
+  "datasetValidation": {
+    "events": 20000,
+    "memories": 5000,
+    "vectorMemories": 5000,
+    "matchingEmbeddingVersion": 5000
+  },
+  "preparationMs": 1674.2565829999999,
+  "ingestionMs": null,
+  "firstRecallMs": 60.65220800000043,
+  "model": {
+    "phase": "ready",
+    "generationLoaded": false,
+    "embeddingLoaded": true,
+    "modelVersion": "qwen3-q8-b10809-v1"
+  },
+  "databaseCacheBudgetBytes": {
+    "index": 268435456,
+    "metadata": 67108864
+  },
+  "hotRecall": {
+    "samples": 200,
+    "p50Ms": 73.48958299999958,
+    "p95Ms": 90.6450419999992,
+    "maxMs": 550.8862499999996,
+    "exactHits": 200,
+    "crossProjectLeaks": 0,
+    "degradation": {
+      "none": 200
+    }
+  },
+  "resources": {
+    "sampledPeakNodeRssMiB": 1336.171875,
+    "measuredPeakDatabaseBytes": 114092846,
+    "processSnapshot": [
+      "27746  8740 1263872 /opt/homebrew/opt/node@22/bin/node",
+      "27854 27851 1225824 /Users/chenxin/Projects/banana-memory/.runtime/models/llama-b10809/llama-server"
+    ],
+    "limitations": "Node RSS is sampled, child model RSS is a final snapshot, and disk is measured after ingestion and queries. Does not include model download temporary files, cold generation or Claude co-running impact."
+  },
+  "prdPerformanceGate": {
+    "measuredOn16GiBTarget": false,
+    "actualQueryEmbedding": true,
+    "actualHookAndClaudeAdapter": false,
+    "passed": false,
+    "reason": "This harness alone cannot satisfy the PRD host/end-to-end and 16 GiB target requirements."
+  }
+}

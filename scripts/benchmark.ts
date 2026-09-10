@@ -5,6 +5,7 @@ import { cpus, tmpdir, totalmem } from 'node:os';
 import { join, resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { promisify } from 'node:util';
+import { connect } from '@lancedb/lancedb';
 import { MemoryService } from '../src/service.js';
 import { ManagedLocalModels } from '../src/models/index.js';
 import type { ContextBundle } from '../src/domain.js';
@@ -23,18 +24,20 @@ const memoryCount = number('--memories', 5_000);
 const queryCount = number('--queries', 200);
 if (memoryCount > eventCount || memoryCount < 2 || queryCount % 2) throw new Error('Need 2 <= memories <= events and an even query count');
 const suppliedDirectory = argument('--directory');
+const reuse = process.argv.includes('--reuse');
+if (reuse && !suppliedDirectory) throw new Error('--reuse requires an existing --directory');
 const directory = suppliedDirectory ? resolve(suppliedDirectory) : await mkdtemp(join(tmpdir(), 'banana-benchmark-'));
 const startedAt = new Date().toISOString();
+async function sourceFiles(directory: string): Promise<string[]> {
+  const entries = await readdir(new URL(`../${directory}/`, import.meta.url), { withFileTypes: true });
+  return (await Promise.all(entries.map(entry => entry.isDirectory() ? sourceFiles(`${directory}/${entry.name}`) : Promise.resolve(entry.name.endsWith('.ts') ? [`${directory}/${entry.name}`] : [])))).flat().sort();
+}
 const sourceFileSha256 = Object.fromEntries(await Promise.all([
-  'src/service.ts', 'src/store.ts', 'src/domain.ts', 'src/consolidation.ts',
-  'src/models/index.ts', 'src/models/download.ts', 'src/models/types.ts',
+  ...await sourceFiles('src'),
   'scripts/benchmark.ts', 'scripts/fixture-models.ts', 'models/manifest.json',
 ].map(async name => [name, createHash('sha256').update(await readFile(new URL(`../${name}`, import.meta.url))).digest('hex')])));
 const realDirectory = argument('--models-dir');
 const realModels = realDirectory ? new ManagedLocalModels({ directory: resolve(realDirectory) }) : undefined;
-const started = performance.now();
-if (realModels) await realModels.prepare();
-const preparationMs = performance.now() - started;
 const markerFor = (index: number) => {
   let value = index;
   let suffix = '';
@@ -46,6 +49,30 @@ const candidates: FixtureExtraction[] = Array.from({ length: memoryCount }, (_, 
 // Only extraction is replayed. --models-dir uses the actual pinned local model
 // for both document vectors and every timed foreground query embedding.
 const models = new FixtureModels(candidates, realModels);
+// Read-only audit: the database is never populated through this connection.
+// On reuse, validate before opening the Service so an invalid dataset is untouched.
+async function verifyPersistedDataset(): Promise<{ events: number; memories: number; vectorMemories: number; matchingEmbeddingVersion: number }> {
+  await stat(join(directory, 'memory.lance', 'records.lance'));
+  const connection = await connect(join(directory, 'memory.lance'));
+  try {
+    const table = await connection.openTable('records');
+    const events = await table.countRows("kind = 'event'");
+    const memories = await table.countRows("kind = 'memory'");
+    const vectorMemories = await table.countRows("kind = 'memory' AND vector IS NOT NULL");
+    const metadata = await table.query().where("kind = 'memory'").select(['data']).toArray();
+    const matchingEmbeddingVersion = metadata.filter(row => (JSON.parse(String(row.data)) as { embeddingVersion?: string }).embeddingVersion === models.status().modelVersion).length;
+    if (events !== eventCount || memories !== memoryCount || vectorMemories !== memoryCount || matchingEmbeddingVersion !== memoryCount) {
+      throw new Error(`Persisted dataset mismatch: ${events} events, ${memories} memories, ${vectorMemories} vectors, ${matchingEmbeddingVersion} current-model vectors`);
+    }
+    return { events, memories, vectorMemories, matchingEmbeddingVersion };
+  } finally { connection.close(); }
+}
+const reusedDataset = reuse ? await verifyPersistedDataset() : undefined;
+const seedReportPath = argument('--seed-report');
+const seedReport = seedReportPath ? JSON.parse(await readFile(resolve(seedReportPath), 'utf8')) as Record<string, unknown> : undefined;
+const started = performance.now();
+if (realModels) await realModels.prepare();
+const preparationMs = performance.now() - started;
 const service = await MemoryService.open(directory, { models });
 let peakHostRssMiB = 0;
 const rssSample = setInterval(() => { peakHostRssMiB = Math.max(peakHostRssMiB, process.memoryUsage().rss / 1024 ** 2); }, 100);
@@ -60,9 +87,9 @@ function quantile(values: number[], fraction: number): number { return [...value
 
 try {
   const scopes = await Promise.all([0, 1].map(session => service.bind({ workspace: `/benchmark/project-${session}/shared-name`, sessionId: `benchmark-session-${session}`, origin: 'hook' })));
-  if ((await service.inspect(scopes[0]!)).events || (await service.inspect(scopes[1]!)).events) throw new Error('Benchmark directory must contain an empty database');
+  if (!reuse && ((await service.inspect(scopes[0]!)).events || (await service.inspect(scopes[1]!)).events)) throw new Error('Benchmark directory must contain an empty database');
   const ingestStart = performance.now();
-  for (let index = 0; index < eventCount; index++) {
+  for (let index = 0; !reuse && index < eventCount; index++) {
     await service.record(scopes[index % 2]!, { id: `perf-event-${index}`, taskId: `perf-task-${index}`, role: 'user',
       text: index < memoryCount ? textFor(index) : `Audit event ${index}: no reusable memory candidate.`,
     });
@@ -76,8 +103,10 @@ try {
   const actualEvents = status.reduce((sum, item) => sum + Number(item.events), 0);
   const actualMemories = status.reduce((sum, item) => sum + Number(item.memories), 0);
   const remainingJobs = status.reduce((sum, item) => sum + Number(item.queue), 0);
-  if (actualEvents !== eventCount || actualMemories !== memoryCount || remainingJobs !== 0) throw new Error(`Dataset incomplete: ${actualEvents} events, ${actualMemories} memories, ${remainingJobs} queued`);
-  const ingestionMs = performance.now() - ingestStart;
+  const remainingVectorJobs = status.reduce((sum, item) => sum + Number(item.vectorQueue), 0);
+  if (actualEvents !== eventCount || actualMemories !== memoryCount || remainingJobs !== 0 || remainingVectorJobs !== 0) throw new Error(`Dataset incomplete: ${actualEvents} events, ${actualMemories} memories, ${remainingJobs} queued, ${remainingVectorJobs} vector jobs`);
+  const ingestionMs = reuse ? null : performance.now() - ingestStart;
+  const datasetValidation = reusedDataset ?? await verifyPersistedDataset();
   physicalBytes = await bytes(directory);
   const coldStart = performance.now();
   await service.recall(scopes[0]!, markerFor(0));
@@ -114,10 +143,13 @@ try {
   const report = {
     executedAt: new Date().toISOString(), status: 'completed',
     startedAt, sourceFileSha256,
+    phase: reuse ? 'queries-on-existing-service-dataset' : 'populate-and-query',
+    ...(reuse ? { datasetOrigin: { directory, seedReportPath: seedReportPath ? resolve(seedReportPath) : undefined, seedStartedAt: seedReport?.startedAt, seedSourceFileSha256: seedReport?.sourceFileSha256 } } : {}),
     mode: realModels ? 'fixture-extraction-with-real-local-embedding' : 'fixture-extraction-and-fixture-embedding',
     scope: 'Dataset populated through MemoryService.record and processPending; timed recall includes query embedding, authoritative scope/state checks, bundle persistence and delivery checks. No Claude client or hook adapter timing.',
     machine: { cpu: cpus()[0]?.model, memoryGiB: totalmem() / 1024 ** 3, platform: process.platform, arch: process.arch, node: process.version },
-    dataset: { events: actualEvents, memories: actualMemories, concurrentSessions: 2, projects: 2, remainingJobs },
+    dataset: { events: actualEvents, memories: actualMemories, concurrentSessions: 2, projects: 2, remainingJobs, remainingVectorJobs },
+    datasetValidation,
     preparationMs, ingestionMs, firstRecallMs,
     model: realModels?.status(), databaseCacheBudgetBytes: STORE_CACHE_BYTES,
     hotRecall: { samples: latencies.length, p50Ms: quantile(latencies, 0.5), p95Ms: quantile(latencies, 0.95), maxMs: Math.max(...latencies), exactHits, crossProjectLeaks, degradation },

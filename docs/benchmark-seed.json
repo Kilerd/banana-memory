@@ -1,0 +1,73 @@
+{
+  "executedAt": "2026-09-10T14:19:18.451Z",
+  "status": "completed",
+  "startedAt": "2026-09-10T14:09:22.584Z",
+  "sourceFileSha256": {
+    "src/service.ts": "c38623c5387215babc76e81211180143a295fa38435b87bf09241c8daac30190",
+    "src/store.ts": "effab0c6c87e6c2de395ec30e8b0e8a79a6b744a17c597823cba1b29e634b13f",
+    "src/domain.ts": "86898f111c2aa9354156a77f486bfb430777f3037d2547d387735ba7bee7d6fa",
+    "src/consolidation.ts": "345f40cf8f8930ec9972eb2937955ab350ccd75a917b7fe253d4cd0acb16aef2",
+    "src/models/index.ts": "69ee589b53ed20e76a3c6abed6775783b13ac806e6a5d95db04dabe945fc363d",
+    "src/models/download.ts": "8453525a2ccdb3ed44dfb5e0045cbe3e60a3a130acdc3e00ebf7958ebf9065fd",
+    "src/models/types.ts": "695280f6559a543b2a10a666478884438187f9e64cde841f5818438d51a68e02",
+    "scripts/benchmark.ts": "c1dbe4f3cd1f8cab813da6d3dfcec1b6a140e3034bc07f3caf777fea0c0e8e21",
+    "scripts/fixture-models.ts": "76a1d690a9e048d12964f68677afd79464c682a3255376b5d1acbe45cf2d6abe",
+    "models/manifest.json": "a77c0ed093ab1cc41ae4ba2c91ddadfbea970bafba953a78d304fe29130cee48"
+  },
+  "mode": "fixture-extraction-with-real-local-embedding",
+  "scope": "Dataset populated through MemoryService.record and processPending; timed recall includes query embedding, authoritative scope/state checks, bundle persistence and delivery checks. No Claude client or hook adapter timing.",
+  "machine": {
+    "cpu": "Apple M4 Pro",
+    "memoryGiB": 48,
+    "platform": "darwin",
+    "arch": "arm64",
+    "node": "v22.23.1"
+  },
+  "dataset": {
+    "events": 20000,
+    "memories": 5000,
+    "concurrentSessions": 2,
+    "projects": 2,
+    "remainingJobs": 0
+  },
+  "preparationMs": 1578.898792,
+  "ingestionMs": 585352.8353329999,
+  "firstRecallMs": 88.18308399990201,
+  "model": {
+    "phase": "ready",
+    "generationLoaded": false,
+    "embeddingLoaded": true,
+    "modelVersion": "qwen3-q8-b10809-v1"
+  },
+  "databaseCacheBudgetBytes": {
+    "index": 268435456,
+    "metadata": 67108864
+  },
+  "hotRecall": {
+    "samples": 200,
+    "p50Ms": 73.40354100009426,
+    "p95Ms": 91.02466699993238,
+    "maxMs": 276.79870900011156,
+    "exactHits": 200,
+    "crossProjectLeaks": 0,
+    "degradation": {
+      "none": 200
+    }
+  },
+  "resources": {
+    "sampledPeakNodeRssMiB": 2839.609375,
+    "measuredPeakDatabaseBytes": 114062244,
+    "processSnapshot": [
+      "77893  8740 2907760 /opt/homebrew/opt/node@22/bin/node",
+      "77971 77968 1169264 /Users/chenxin/Projects/banana-memory/.runtime/models/llama-b10809/llama-server"
+    ],
+    "limitations": "Node RSS is sampled, child model RSS is a final snapshot, and disk is measured after ingestion and queries. Does not include model download temporary files, cold generation or Claude co-running impact."
+  },
+  "prdPerformanceGate": {
+    "measuredOn16GiBTarget": false,
+    "actualQueryEmbedding": true,
+    "actualHookAndClaudeAdapter": false,
+    "passed": false,
+    "reason": "This harness alone cannot satisfy the PRD host/end-to-end and 16 GiB target requirements."
+  }
+}

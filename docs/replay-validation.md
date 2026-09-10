@@ -23,16 +23,16 @@
 执行：
 
 ```sh
-npm run evaluate:replay -- --output /tmp/banana-replay-results.json
+npm run evaluate:replay -- --output docs/replay-evaluation.json
 ```
 
-2026-09-10 14:05:55 UTC 实际结果：
+2026-09-10 14:24:28 UTC 最终源码实际结果，完整检查点记录见 [replay-evaluation.json](replay-evaluation.json)：
 
 | 指标 | 实际计数 |
 | --- | ---: |
 | 查询检查点通过 | 160 / 160 |
 | 预置正例在前 6 项中完整返回 | 84 / 84 |
-| 来源正文与项目校验 | 676 / 676 |
+| 来源正文与项目校验 | 680 / 680 |
 | 跨项目泄漏 | 0 |
 | 已删除来源再现 | 0 |
 | 已确定冲突的旧正文作为当前结果返回 | 0 |
@@ -40,6 +40,8 @@ npm run evaluate:replay -- --output /tmp/banana-replay-results.json
 | 完整来源删除与旧版本清理 | 4 次 |
 
 第一次执行发现 4 个历史查询失败：归档经历的精确代码匹配被时间降权后，无关向量候选占据上下文。已修复显式历史查询不做时间降权、精确代码优先，保持原有外部期望不变，再次执行全部通过。实现了正文环境依赖识别后，为第 35 条固定经历显式设置其原文要求的 Node 22 前置环境；固定不覆盖环境失效，原有正例期望保持不变。
+
+最终审查将可信结果反馈收紧为显式、单行的结果声明，避免把“尚未验证通过”等否定内容记作成功。回放工具原先把原文和失败声明拼成多行，因此在反例场景被正确拒绝。现仅将工具合成的反馈封装为 `验证失败，反例：原始事件正文 原始 evidence`；保留夹具中的事件正文、evidence、期望 ID / 版本 / 正文和所有禁止项，不修改产品分类器。此次按实际接口格式重跑全部 160 个检查点通过，来源检查实际计数为 680，原始报告记录了每个检查点的结果。
 
 这是固定集合的结果，不是对任意输入的保证。`84/84` 只属于确定性模型替身的回放，不能作为 PRD 实际本地模型 Recall@6 ≥90% 的证据；真实模型抽取字段准确率和来源引用质量由独立模型评测报告。
 
@@ -55,9 +57,53 @@ npm run benchmark -- --events 40 --memories 10 --queries 20
 npm run benchmark -- --output /tmp/banana-benchmark.json
 
 # 完整数据规模；抽取仍为预置候选，文档与查询向量来自固定本地模型
-npm run benchmark -- --models-dir /absolute/path/to/model-cache --output /tmp/banana-real-embedding-benchmark.json
+npm run benchmark -- --models-dir /absolute/path/to/model-cache --directory /tmp/banana-benchmark-data --output /tmp/banana-real-embedding-benchmark.json
+
+# 在保留的 Service 数据集上只重测查询，独立记录当前源码和原始写入源码
+npm run benchmark -- --reuse --models-dir /absolute/path/to/model-cache --directory /tmp/banana-benchmark-data --seed-report /tmp/banana-real-embedding-benchmark.json --output /tmp/banana-final-query-benchmark.json
 ```
 
-本次 smoke：40 事件 / 10 记忆 / 20 次双会话查询全部完成，正确命中 20/20，跨项目泄漏 0。最新执行使用字母资源标识以区分独立事实，热查询 p95 97.19 ms，采样 Node RSS 峰值约 186.8 MiB；当时还并行运行另一个完整数据规模的写入测试。这仅验证性能脚本可用，不属于完整数据规模，也不包含真实模型。
+`--reuse` 不写入种子数据。启动 Service 前只读检查数据库的事件数、记忆数、非空向量数和向量模型版本，随后检查两个项目的规模和待处理队列；任何不匹配都会中止。它将写入耗时记为 `null`，保留种子报告的启动时间和源码 SHA，与本轮查询使用的源码 SHA 分开记录。该只读连接不会创建评测数据。
+
+## 真实向量全量写入结果
+
+2026-09-10 14:09:22–14:19:18 UTC 在本机完成全部 20,000 条事件和 5,000 条记忆的实际写入、抽取处理与检索，普通任务队列为 0。5,000 条文档和查询使用固定本地 `qwen3-q8-b10809-v1` embedding；抽取仍来自原始事件匹配的候选夹具。资源标识采用字母编码以区分独立事实，未调整测量期望或直接写数据库。
+
+原始输出保存在 [benchmark-seed.json](benchmark-seed.json)，包含启动时间、10 个关键源码文件的 SHA-256、硬件信息、实际模型状态和完整计时。它对应启动时加载的代码；后续审查修复的查询性能另行复测，不能归入这次写入计时。
+
+| 指标 | 完整写入与查询实测 |
+| --- | ---: |
+| Service 写入与处理 20,000 条事件 | 585.35 秒 |
+| 模型准备 | 1,578.90 ms |
+| 首次召回 | 88.18 ms |
+| 双会话热查询 | 200 次 |
+| 热查询 p50 / p95 / 最大值 | 73.40 / 91.02 / 276.80 ms |
+| 精确结果命中 | 200 / 200 |
+| 跨项目泄漏 / 降级 | 0 / 0 |
+| 采样 Node RSS 峰值 | 2,839.61 MiB |
+| embedding 子进程 RSS 末态快照 | 1,141.86 MiB |
+| 两次采样中的较大数据库体积 | 114,062,244 bytes（108.78 MiB） |
+
+LanceDB 的索引 / 元数据缓存预算分别固定为 256 / 64 MiB；完整写入进程的总 RSS 仍高于这些预算，缓存配置不能当作总内存上限。末态子进程内存不是子进程峰值，不能与 Node 峰值相加后声称系统峰值。
+
+## 最终源码查询复测
+
+2026-09-10 14:22:15–14:22:26 UTC，审查修复后的源码重新打开同一完整数据集，使用真实本地模型重新计算每次查询向量。原始输出为 [benchmark-final-query.json](benchmark-final-query.json)，记录全部 `src/**/*.ts` 和评测依赖的启动时 SHA-256；本轮 Service SHA 为 `daf6d67b305fdc92fef454354c6b11597b52fd32aac3b7efb5a60d8b36bfd6ec`。它没有再次生成或写入 20,000 条种子事件，写入耗时明确为 `null`。
+
+| 指标 | 最终查询实测 |
+| --- | ---: |
+| 只读审计：事件 / 记忆 | 20,000 / 5,000 |
+| 非空向量 / 匹配当前模型版本 | 5,000 / 5,000 |
+| 普通任务队列 / 向量队列 | 0 / 0 |
+| 并行会话 / 隔离项目 | 2 / 2 |
+| 模型准备 / 首次召回 | 1,674.26 / 60.65 ms |
+| 热查询 p50 / p95 / 最大值 | 73.49 / 90.65 / 550.89 ms |
+| 精确结果命中 | 200 / 200 |
+| 跨项目泄漏 / 降级 | 0 / 0 |
+| 重启查询进程采样 Node RSS 峰值 | 1,336.17 MiB |
+| embedding 子进程 RSS 末态快照 | 1,197.09 MiB |
+| 两次采样中的较大数据库体积 | 114,092,846 bytes（108.81 MiB） |
+
+这轮查询期间暂停其他模型和 Claude 实测；它测量服务查询路径，不能代替 Claude 正常同机工作时的干扰测试。完整写入的较高 RSS 仍保留在前表，查询复测不覆盖写入资源结论。固定标识命中用于验证检索和隔离；200/200 不能证明任意自然语言语义召回率，也不能证明真实生成模型的抽取质量。
 
 实际测试机器为 Apple M4 Pro / 48 GiB，尚未在 16 GiB 目标机测量。脚本报告明确将 `prdPerformanceGate.passed` 标为 false：缺少真实 hook / Claude 适配器开销、Claude 同机运行影响、生成耗时及完整峰值模型内存/下载磁盘测量。Node RSS 使用采样，子进程 RSS 为可取得时的末态快照，数据库磁盘仅在采集后与查询后测量，不混称系统峰值。

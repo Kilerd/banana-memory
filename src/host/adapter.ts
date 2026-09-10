@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { realpath, stat } from 'node:fs/promises';
 import { isAbsolute, relative, resolve } from 'node:path';
 import type { ExplicitIntent, HookName, NormalizedEvent } from './contracts.js';
+import { normalizeRuntimeName, type RuntimeName } from '../runtime-names.js';
 
 export const HOOK_NAMES: readonly HookName[] = ['SessionStart', 'UserPromptSubmit', 'PostToolUse', 'PostToolUseFailure', 'Stop', 'SessionEnd'];
 const MAX_TEXT = 24_000;
@@ -69,6 +70,22 @@ function outside(workspace: string, file: string): boolean {
   return rel === '..' || rel.startsWith('../') || isAbsolute(rel);
 }
 
+function runtimeVersion(input: Record<string, unknown>, response: unknown): { runtime: RuntimeName; version: string } | undefined {
+  if (typeof input.command !== 'string') return;
+  const commands = new Set(['node --version', 'npm --version', 'pnpm --version', 'python --version', 'python3 --version']);
+  if (!commands.has(input.command)) return;
+  const runtime = normalizeRuntimeName(input.command.split(' ')[0]!);
+  if (!runtime) return;
+  const stdout = typeof response === 'string' ? response : response && typeof response === 'object' && 'stdout' in response ? response.stdout : undefined;
+  if (typeof stdout !== 'string') return;
+  // Preserve only an unambiguous numeric version, never surrounding output or
+  // a shell command. Arbitrary shell output has no provable workspace scope.
+  const pattern = runtime === 'python' ? /^(?:Python )?(\d{1,4}\.\d{1,4}\.\d{1,4})$/ : runtime === 'node' ? /^v?(\d{1,4}\.\d{1,4}\.\d{1,4})$/ : /^(\d{1,4}\.\d{1,4}\.\d{1,4})$/;
+  const versions = new Set(stdout.split(/\r?\n/).map(line => pattern.exec(line.trim())?.[1]).filter((value): value is string => !!value));
+  if (versions.size !== 1) return;
+  return { runtime, version: [...versions][0]! };
+}
+
 export async function normalizeHook(payload: Record<string, unknown>, workspace: string | null, taskId?: string): Promise<NormalizedEvent> {
   const kind = payload.hook_event_name as HookName;
   if (!HOOK_NAMES.includes(kind) || typeof payload.session_id !== 'string' || !payload.session_id) throw new Error('invalid_host_event');
@@ -84,14 +101,19 @@ export async function normalizeHook(payload: Record<string, unknown>, workspace:
     try { actual = await realpath(absolute); } catch { /* A newly written path can be absent. */ }
     if (outside(workspace, actual)) { reasons.add('outside_workspace'); excluded = true; }
   }
-  if (typeof input.command === 'string' && CREDENTIAL_PATH.test(input.command)) { reasons.add('credential_file'); excluded = true; }
   let raw: unknown = '';
   if (kind === 'UserPromptSubmit') raw = payload.prompt ?? '';
   if (kind === 'Stop') raw = payload.last_assistant_message ?? '[turn ended; task outcome not established]';
   if (kind === 'PostToolUse' || kind === 'PostToolUseFailure') raw = { input, result: payload.tool_response ?? payload.error ?? '' };
   if (kind === 'SessionStart') raw = { source: payload.source ?? 'startup' };
   if (kind === 'SessionEnd') raw = { reason: payload.reason ?? 'other' };
-  const cleaned = excluded ? '[FILTERED HOST EVENT]' : sanitize(raw, reasons);
+  let version: { runtime: RuntimeName; version: string } | undefined;
+  if ((kind === 'PostToolUse' || kind === 'PostToolUseFailure') && payload.tool_name === 'Bash') {
+    if (workspace && kind === 'PostToolUse' && !excluded) version = runtimeVersion(input, payload.tool_response);
+    if (!version) { excluded = true; reasons.add('unverified_shell_scope'); }
+    if (!workspace) { excluded = true; reasons.add('unbound_file_scope'); }
+  }
+  const cleaned = excluded ? '[FILTERED HOST EVENT]' : version ?? sanitize(raw, reasons);
   let text = typeof cleaned === 'string' ? cleaned : JSON.stringify(cleaned);
   const truncated = text.length > MAX_TEXT || reasons.has('structure_limit');
   if (text.length > MAX_TEXT) text = text.slice(0, MAX_TEXT) + '\n[TRUNCATED HOST EVENT]';

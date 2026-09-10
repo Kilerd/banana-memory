@@ -46,6 +46,8 @@ claude plugin install banana-memory@banana-memory-local
 
 这些边界隔离 MCP 参数与宿主权限。它们不是针对已经具有同一操作系统用户完整文件与进程权限的恶意程序建立的沙箱。
 
+采集对 Bash 采用保守边界：任意 shell 命令及其输出均不保存，只保留工具发生、成功或失败、会话和事件标识，以及 `unverified_shell_scope` 过滤原因。不能从 shell 命令字符串证明输出来自当前工作区，因此即使 `cat notes.txt` 看起来是相对路径也不采集正文。唯一例外是明确工作区内成功执行的精确单条 `node/npm/pnpm/python/python3 --version`：只保留唯一解析出的数字版本与归一化运行时名称，舍弃命令原文和所有附带输出；无法解析、组合命令、失败或工作区未知均过滤。`python3` 统一为 `python`，`Node.js` 统一为 `node`。普通文件工具继续执行工作区真实路径、外部符号链接及凭据文件过滤。
+
 官方依据：[插件的 MCP、缓存与路径规则](https://code.claude.com/docs/en/plugins-reference)、[生命周期 hooks 和输入输出语义](https://code.claude.com/docs/en/hooks)、[MCP 工作区环境](https://code.claude.com/docs/en/mcp)、[本地 marketplace 安装](https://code.claude.com/docs/en/plugin-marketplaces)。
 
 ## 可重复检查与结果
@@ -63,7 +65,7 @@ BANANA_CLAUDE_SMOKE_PLUGIN=/tmp/banana-memory-host-validation/marketplace/banana
   node --import tsx --test tests/host.test.ts
 ```
 
-最后一次完整运行：**6 个通过，0 个失败，0 个跳过**，约 3.9 秒。默认不设置 smoke 路径时只执行普通 5 项，并明确跳过真实宿主用例。
+最后一次完整运行：**7 个通过，0 个失败，0 个跳过**，约 2.93 秒。默认不设置 smoke 路径时只执行普通 6 项，并明确跳过真实宿主用例。
 
 | 检查 | 实际结果 |
 |---|---|

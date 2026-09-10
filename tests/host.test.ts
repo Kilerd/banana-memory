@@ -11,6 +11,7 @@ import { normalizeHook, parseExplicitIntent } from '../src/host/adapter.js';
 import { startKernel } from '../src/host/kernel.js';
 import { KernelClient, runtimeDirectory } from '../src/host/ipc.js';
 import type { ExplicitIntent, HostIdentity, NormalizedEvent, ServerBackend } from '../src/host/contracts.js';
+import { normalizeRuntimeName } from '../src/runtime-names.js';
 
 function fixtureBackend() {
   const events: { identity: HostIdentity; event: NormalizedEvent; intent?: ExplicitIntent }[] = [];
@@ -62,6 +63,36 @@ test('host collection redacts credentials, filters outside-workspace files and k
     const long = await normalizeHook({ hook_event_name: 'UserPromptSubmit', session_id: 's', prompt: 'x'.repeat(30_000) }, workspace);
     assert.equal(long.truncated, true); assert.ok(long.text.endsWith('[TRUNCATED HOST EVENT]'));
   } finally { await rm(dir, { recursive: true, force: true }); }
+});
+
+test('Bash keeps metadata only except for parsed versions from exact runtime commands', async () => {
+  const workspace = await mkdtemp(join(tmpdir(), 'banana-shell-scope-'));
+  const base = { hook_event_name: 'PostToolUse', session_id: 'bash-session', tool_use_id: 'bash-1', tool_name: 'Bash' };
+  try {
+    for (const command of ['cat /tmp/other-project/notes.txt', 'cat notes.txt', 'node --version && cat /tmp/other-project/notes.txt', 'node --version\ncat notes.txt', 'echo v22.23.1']) {
+      const input = { ...base, tool_input: { command }, tool_response: { stdout: 'OTHER_PROJECT_PRIVATE_BODY', stderr: 'PRIVATE_ERROR' } };
+      const event = await normalizeHook(input, workspace);
+      assert.equal(event.filtered, true); assert.ok(event.filterReasons.includes('unverified_shell_scope'));
+      assert.equal(event.text, '[FILTERED HOST EVENT]'); assert.equal(event.outcome, 'tool_success');
+      assert.ok(!JSON.stringify(event).includes('OTHER_PROJECT_PRIVATE_BODY')); assert.ok(!JSON.stringify(event).includes(command));
+      assert.equal((await normalizeHook(input, workspace)).id, event.id);
+    }
+    const version = await normalizeHook({ ...base, tool_input: { command: 'python3 --version' }, tool_response: { stdout: 'PRIVATE_PREAMBLE\nPython 3.12.6\nPRIVATE_TRAILER', stderr: 'PRIVATE_ERROR' } }, workspace);
+    assert.equal(version.filtered, false); assert.deepEqual(JSON.parse(version.text), { runtime: 'python', version: '3.12.6' });
+    assert.ok(!JSON.stringify(version).includes('PRIVATE_')); assert.ok(!version.text.includes('--version'));
+    for (const [command, stdout, runtime, value] of [['node --version', 'v22.23.1', 'node', '22.23.1'], ['npm --version', '10.9.0', 'npm', '10.9.0'], ['pnpm --version', '10.17.1', 'pnpm', '10.17.1'], ['python --version', 'Python 3.13.7', 'python', '3.13.7']]) {
+      const event = await normalizeHook({ ...base, tool_input: { command }, tool_response: stdout }, workspace);
+      assert.equal(event.filtered, false); assert.deepEqual(JSON.parse(event.text), { runtime, version: value });
+    }
+    for (const event of [
+      await normalizeHook({ ...base, tool_input: { command: 'node --version' }, tool_response: 'v22.23.1' }, null),
+      await normalizeHook({ ...base, hook_event_name: 'PostToolUseFailure', tool_input: { command: 'node --version' }, error: 'PRIVATE_ERROR v22.23.1' }, workspace),
+      await normalizeHook({ ...base, tool_input: { command: 'node --version' }, tool_response: 'v22.23.1\nv24.0.0' }, workspace),
+    ]) { assert.equal(event.filtered, true); assert.equal(event.text, '[FILTERED HOST EVENT]'); }
+    assert.equal(normalizeRuntimeName('python3'), 'python'); assert.equal(normalizeRuntimeName('Node.js'), 'node');
+    assert.equal(normalizeRuntimeName('npm'), 'npm'); assert.equal(normalizeRuntimeName('pnpm'), 'pnpm'); assert.equal(normalizeRuntimeName('unknown'), undefined);
+    assert.equal(normalizeRuntimeName('constructor'), undefined); assert.equal(normalizeRuntimeName('__proto__'), undefined);
+  } finally { await rm(workspace, { recursive: true, force: true }); }
 });
 
 test('a single private kernel binds sessions, denies forged scope and drains on exit', async () => {

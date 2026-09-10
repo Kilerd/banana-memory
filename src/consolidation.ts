@@ -1,14 +1,15 @@
 import { digest, type MemoryData } from './domain.js';
+import { normalizeRuntimeName } from './runtime-names.js';
 
 /** Extract only explicit, recognized dependency versions from evidence, never from arbitrary filenames. */
 export function environmentDependencies(text: string, conditions: string[]): Record<string, string> {
   const environment: Record<string, string> = {};
   for (const condition of conditions) {
     const match = /^([a-zA-Z][\w.-]*)=(.+)$/.exec(condition);
-    if (match) environment[match[1]!.toLowerCase()] = match[2]!;
+    if (match) environment[normalizeRuntimeName(match[1]!) ?? match[1]!.toLowerCase()] = match[2]!;
   }
   for (const match of text.matchAll(/\b(Node(?:\.js)?|macOS|Python(?:3)?|pnpm|npm)\s*(?:版本|version|[=v:])?\s*(\d+(?:\.\d+){0,2})(?![\d.])/gi)) {
-    const key = match[1]!.toLowerCase().replace('node.js', 'node').replace('python3', 'python');
+    const key = normalizeRuntimeName(match[1]!) ?? match[1]!.toLowerCase();
     environment[key] = match[2]!;
   }
   return environment;

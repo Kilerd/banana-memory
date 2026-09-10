@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { UnifiedStore, type StoredRecord } from './store.js';
 import type { LocalModels, MemoryCandidate } from './models/types.js';
 import type { HostIdentity, ExplicitIntent } from './host/contracts.js';
-import { digest, MemoryError, POLICY_VERSION, tokenCount, lexicalScore, effectiveState, ageWeight, type MemoryData, type EventData, type EventInput, type Scope, type ContextBundle, type RecallMemory } from './domain.js';
+import { digest, MemoryError, POLICY_VERSION, tokenCount, lexicalScore, effectiveState, ageWeight, isDirectUserStatement, classifyOutcome, type MemoryData, type EventData, type EventInput, type Scope, type ContextBundle, type RecallMemory } from './domain.js';
 import { environmentDependencies, temporalFields, canConsolidate, conflictCandidate, experienceId } from './consolidation.js';
 
 export interface ServiceOptions { models?: LocalModels; now?: () => number }
@@ -31,7 +31,7 @@ export class MemoryService {
       } catch { /* Sources stay revoked; the next startup can resume physical cleanup. */ }
     }
     if (options.models) {
-      const stale = [...service.records.values()].filter(row => row.kind === 'memory' && row.data.embeddingVersion !== options.models!.status().modelVersion);
+      const stale = [...service.records.values()].filter(row => row.kind === 'memory' && (!row.vector || row.data.embeddingVersion !== options.models!.status().modelVersion));
       if (stale.length) await service.publish(stale.map(row => service.vectorJob(row)));
     }
     return service;
@@ -126,6 +126,7 @@ export class MemoryService {
     }
     return { projectId: scope.projectId, scopeReason: scope.reason, paused: this.project(scope).data.paused, generation: this.generation(scope), events: this.rows(scope, 'event').length,
       memories: this.rows(scope, 'memory').length, queue: this.rows(scope, 'job').filter(row => row.data.state === 'queued' || row.data.state === 'running').length,
+      recentEvents: this.rows(scope, 'event').slice(-5).map(row => ({ id: row.id, version: row.version, kind: row.data.kind, taskId: row.data.taskId })),
       vectorQueue: this.rows(scope, 'vector-job').filter(row => row.data.state === 'queued' || row.data.state === 'failed').length,
       recentErrors: [...this.rows(scope, 'job'), ...this.rows(scope, 'vector-job')].filter(row => row.data.error).slice(-5).map(row => ({ jobId: row.id, code: row.data.error })),
       cleanupPending: this.rows(scope, 'purge').some(row => row.data.state === 'pending'),
@@ -150,9 +151,9 @@ export class MemoryService {
       const bundle = input.bundleId ? this.records.get(input.bundleId) : undefined;
       if (input.bundleId && (!bundle || bundle.projectId !== scope.projectId || bundle.kind !== 'bundle')) throw new MemoryError('UNAUTHORIZED', 'Context bundle unavailable');
       const sourceEvents = sources.map(id => this.records.get(id)!);
-      const explicit = sourceEvents.filter(row => row.data.trusted && row.data.role === 'user' && row.data.taskId === input.taskId && !row.data.truncated && !/(^\s*>|```|引用|转述|quoted)/im.test(String(row.data.text)));
-      const successful = explicit.filter(row => /验证通过|结果符合预期|verified success|verified outcome/i.test(String(row.data.text)));
-      const failed = explicit.filter(row => /验证失败|反例|verified failure|counterexample/i.test(String(row.data.text)));
+      const explicit = sourceEvents.filter(row => row.data.taskId === input.taskId && isDirectUserStatement(row.data as EventData));
+      const successful = explicit.filter(row => classifyOutcome(String(row.data.text)) === 'success');
+      const failed = explicit.filter(row => classifyOutcome(String(row.data.text)) === 'failure');
       const verified = successful.length > 0 || failed.length > 0;
       const id = 'f:' + digest(scope.projectId + input.taskId + JSON.stringify(sources) + input.text);
       const record: StoredRecord = { id, kind: 'feedback', projectId: scope.projectId, version: 1, data: { taskId: input.taskId, bundleId: input.bundleId, text: input.text.slice(0, 8000), sources, verified, outcome: failed.length ? 'failure' : successful.length ? 'success' : 'unverified', createdAt: this.timestamp() } };
@@ -181,7 +182,7 @@ export class MemoryService {
     this.check(scope);
     if (scope.origin !== 'hook') throw new MemoryError('UNAUTHORIZED', 'Only the trusted user hook can issue an intent');
     return this.exclusive(async () => {
-      if ('target' in intent) this.target(scope, intent.target, intent.expectedVersion);
+      if ('target' in intent) this.target(scope, intent.target, intent.expectedVersion, intent.action === 'delete-preview' ? ['memory', 'event'] : ['memory']);
       if (intent.action === 'complete-task' && !this.rows(scope, 'event').some(row => row.data.taskId === intent.taskId)) throw new MemoryError('INVALID_INPUT', 'Task unavailable in this workspace');
       if (intent.action === 'correct' && (!intent.text.trim() || intent.text.length > 8192)) throw new MemoryError('INVALID_INPUT', 'Correction must contain 1–8192 characters');
       if (intent.action === 'delete') {
@@ -193,10 +194,10 @@ export class MemoryService {
       return { intentToken: token };
     });
   }
-  private target(scope: Scope, id: string, version: number): StoredRecord {
+  private target(scope: Scope, id: string, version: number, kinds: readonly string[] = ['memory']): StoredRecord {
     const target = this.records.get(id);
-    if (!target || target.kind !== 'memory' || target.projectId !== scope.projectId) throw new MemoryError('UNAUTHORIZED', 'Memory unavailable in this workspace');
-    if (target.version !== version) throw new MemoryError('VERSION_CONFLICT', 'Memory version changed');
+    if (!target || !kinds.includes(target.kind) || target.projectId !== scope.projectId) throw new MemoryError('UNAUTHORIZED', 'Record unavailable in this workspace');
+    if (target.version !== version) throw new MemoryError('VERSION_CONFLICT', 'Record version changed');
     return target;
   }
   private control(scope: Scope, fields: Record<string, unknown> = {}): StoredRecord {
@@ -213,12 +214,13 @@ export class MemoryService {
       // Consuming a capability erases its original body; audit records retain no correction text.
       const used: StoredRecord = { ...credential, version: credential.version + 1, data: { consumed: true, action: intent.action } };
       if (intent.action === 'delete-preview') {
-        const target = this.target(scope, intent.target, intent.expectedVersion);
+        const target = this.target(scope, intent.target, intent.expectedVersion, ['memory', 'event']);
         const histories = this.rows(scope, 'history').filter(row => row.data.memoryId === target.id);
-        const sources = this.dependentSources(scope, [...new Set([target, ...histories].flatMap(row => (row.data as MemoryData).sources))]);
+        const originals = target.kind === 'event' ? [target.id] : [target, ...histories].flatMap(row => (row.data as MemoryData).sources);
+        const sources = this.dependentSources(scope, [...new Set(originals)]);
         const affected = this.rows(scope).filter(row => row.kind === 'memory' && (row.data as MemoryData).sources.some(id => sources.includes(id)));
         const id = 'preview:' + randomUUID();
-        await this.publish([used, { id, kind: 'preview', projectId: scope.projectId, version: 1, data: { target: target.id, targetVersion: target.version, sources, affected: affected.map(row => row.id), generation: this.generation(scope), expiresAt: this.now() + 5 * 60_000 } }]);
+        await this.publish([used, { id, kind: 'preview', projectId: scope.projectId, version: 1, data: { target: target.id, targetVersion: target.version, sources, affected: affected.map(row => row.id), affectedVersions: affected.map(row => ({ id: row.id, version: row.version })), generation: this.generation(scope), expiresAt: this.now() + 5 * 60_000 } }]);
         return { previewId: id, sources, affectedMemories: affected.map(row => ({ id: row.id, version: row.version, text: row.data.text })), notice: 'Deletes entire source events and dependent memories, including old database versions. Other memories from the same events may be affected. Claude history, exports and system backups are outside this deletion.' };
       }
       if (intent.action === 'delete') return this.deleteSources(scope, intent.previewId, used);
@@ -258,10 +260,13 @@ export class MemoryService {
   private async deleteSources(scope: Scope, previewId: string, used: StoredRecord): Promise<Record<string, any>> {
     const preview = this.records.get(previewId);
     if (!preview || preview.kind !== 'preview' || preview.projectId !== scope.projectId || preview.data.generation !== this.generation(scope) || Number(preview.data.expiresAt) <= this.now()) throw new MemoryError('VERSION_CONFLICT', 'Deletion preview expired or changed');
-    this.target(scope, String(preview.data.target), Number(preview.data.targetVersion));
+    this.target(scope, String(preview.data.target), Number(preview.data.targetVersion), ['memory', 'event']);
     const expanded = this.dependentSources(scope, preview.data.sources as string[]);
     if (expanded.length !== (preview.data.sources as string[]).length) throw new MemoryError('VERSION_CONFLICT', 'Source dependencies changed; request a new deletion preview');
     const sources = new Set(expanded);
+    const visibleAffected = this.rows(scope, 'memory').filter(row => (row.data as MemoryData).sources.some(id => sources.has(id)));
+    const previewed = preview.data.affectedVersions as { id: string; version: number }[] | undefined;
+    if (!previewed || visibleAffected.length !== previewed.length || visibleAffected.some(row => !previewed.some(previous => previous.id === row.id && previous.version === row.version))) throw new MemoryError('VERSION_CONFLICT', 'Deletion impact changed; request a new deletion preview');
     const affected = new Set(this.rows(scope).filter(row => ['memory', 'history'].includes(row.kind) && (row.data as MemoryData).sources.some(id => sources.has(id))).map(row => row.id));
     const relatedBundles = new Set(this.rows(scope, 'bundle').filter(row => (row.data.sources as string[] | undefined)?.some(id => sources.has(id))).map(row => row.id));
     const remove = this.rows(scope).filter(row => sources.has(row.id) || affected.has(row.id) ||
@@ -307,6 +312,12 @@ export class MemoryService {
     this.processing = this.work(limit).finally(() => { this.processing = undefined; });
     return this.processing;
   }
+  async retryFailedWork(): Promise<void> {
+    await this.exclusive(async () => {
+      const failed = [...this.records.values()].filter(row => ['job', 'vector-job'].includes(row.kind) && row.data.state === 'failed');
+      if (failed.length) await this.publish(failed.map(row => ({ ...row, version: row.version + 1, data: { ...row.data, state: 'queued', attempts: 0, retryAt: 0, error: undefined } })));
+    });
+  }
   private async work(limit: number): Promise<void> {
     const models = this.options.models;
     if (!models || this.closed || models.status().phase !== 'ready') return;
@@ -349,7 +360,7 @@ export class MemoryService {
             if (this.rows({ projectId: source.projectId } as Scope, 'memory').some(row => row.data.modelVersion === 'user-command' && row.data.text === text && row.data.type === candidate.type)) continue;
             const old = previous?.data as MemoryData | undefined;
             const sources = [...new Set([...(old?.sources ?? []), source.id])];
-            const direct = event.trusted && event.role === 'user' && !/(^\s*>|```|\b(?:quoted|pasted|third.party|user_confirmed)\b|引用|转述|第三方)/im.test(event.text);
+            const direct = isDirectUserStatement(event);
             const certain = candidate.confidence >= 0.8 && !event.truncated && !event.filtered;
             const state = old?.state ?? (certain && ((candidate.type === 'fact' || candidate.type === 'preference') && direct || candidate.type === 'episode' && event.trusted) ? 'active' : 'candidate');
             const environment = environmentDependencies(text, candidate.conditions);
@@ -375,6 +386,11 @@ export class MemoryService {
             for (const sourceId of sources) changed.set('rel:' + digest(id + sourceId), { id: 'rel:' + digest(id + sourceId), kind: 'relation', projectId: source.projectId, version: memory.version, data: { from: id, fromVersion: memory.version, to: sourceId, toVersion: this.records.get(sourceId)?.version, type: 'sourced_from', sources: [sourceId], valid: true } });
           }
           this.consolidate(snapshot.job.projectId, changed);
+          const validityChanged = [...changed.values()].some(row => row.kind === 'memory' && this.records.has(row.id) && this.records.get(row.id)!.data.state !== row.data.state) || changed.has(project.id);
+          if (validityChanged) {
+            const updated = changed.get(project.id) ?? project;
+            changed.set(project.id, { ...updated, version: project.version + 1, data: { ...updated.data, generation: snapshot.generation + 1 } });
+          }
           changed.set(snapshot.job.id, { ...snapshot.job, data: { ...snapshot.job.data, state: 'done', published: [...changed.values()].filter(row => row.kind === 'memory').map(row => row.id) } });
           await this.publish([...changed.values()]);
         });

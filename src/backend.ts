@@ -6,7 +6,8 @@ import { MemoryService } from './service.js';
 import { ManagedLocalModels } from './models/index.js';
 import { sanitizeText } from './host/adapter.js';
 import type { ServerBackend } from './host/contracts.js';
-import { digest, MemoryError, type Scope } from './domain.js';
+import { classifyOutcome, digest, MemoryError, type Scope } from './domain.js';
+import { normalizeRuntimeName } from './runtime-names.js';
 
 export async function createBackend(dataDirectory: string): Promise<ServerBackend> {
   await mkdir(dataDirectory, { recursive: true, mode: 0o700 });
@@ -21,7 +22,7 @@ export async function createBackend(dataDirectory: string): Promise<ServerBacken
   worker.unref();
   let closing = false;
   const backend: ServerBackend = {
-    async retryModels() { await models.retry(); void service.processPending().catch(() => {}); return models.status(); },
+    async retryModels() { await models.retry(); await service.retryFailedWork(); void service.processPending().catch(() => {}); return models.status(); },
     bind: identity => service.bind(identity),
     async handleHook(context, event, intent) {
       const scope = context as Scope;
@@ -34,16 +35,13 @@ export async function createBackend(dataDirectory: string): Promise<ServerBacken
       // Recognize only explicit tool-reported runtime versions; arbitrary prompts cannot update environment authority.
       if (event.role === 'tool' && !event.filtered && !event.truncated && event.toolName === 'Bash') {
         try {
-          const output = JSON.parse(event.text) as { input?: { command?: string }; result?: unknown };
-          const command = output.input?.command?.trim();
-          const match = /^(node|npm|pnpm|python3?) --version$/.exec(command ?? '');
-          const result = typeof output.result === 'string' ? output.result : JSON.stringify(output.result);
-          const version = /(?:^|[\s":])v?(\d+\.\d+\.\d+)(?:[\s",}]|$)/.exec(result);
-          if (match && version) await service.updateEnvironment(scope, { [match[1]!]: version[1]! });
+          const output = JSON.parse(event.text) as { runtime?: unknown; version?: unknown };
+          const runtime = typeof output.runtime === 'string' ? normalizeRuntimeName(output.runtime) : undefined;
+          if (runtime && typeof output.version === 'string' && /^\d+\.\d+\.\d+$/.test(output.version)) await service.updateEnvironment(scope, { [runtime]: output.version });
         } catch { /* Non-version tool output remains ordinary evidence. */ }
       }
       const received = await service.record(scope, event);
-      if (event.kind === 'UserPromptSubmit' && received.id && /验证通过|结果符合预期|验证失败|反例|verified success|verified outcome|verified failure|counterexample/i.test(event.text)) {
+      if (event.kind === 'UserPromptSubmit' && received.id && classifyOutcome(event.text) !== 'unverified') {
         await service.feedback(scope, { taskId: event.taskId, text: event.text, sourceIds: [received.id] });
       }
       if (event.kind === 'Stop') void service.processPending().catch(() => {});

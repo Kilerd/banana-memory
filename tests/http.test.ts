@@ -40,7 +40,9 @@ test('foreground HTTP MCP authenticates requests and binds tools to the client r
   const page = await fetch(server.url.replace('/mcp', '/'));
   assert.equal(page.status, 200);
   assert.match(page.headers.get('content-security-policy') ?? '', /frame-ancestors 'none'/);
-  assert.match(await page.text(), /记忆如何留下/);
+  const pageHtml = await page.text();
+  assert.match(pageHtml, /记忆如何留下/);
+  assert.match(pageHtml, /生成模型/);
   assert.equal((await fetch(server.url.replace('/mcp', '/api/dashboard'))).status, 401);
   assert.deepEqual(await fetch(server.url.replace('/mcp', '/api/dashboard'), { headers: { authorization: 'Bearer test-secret' } }).then(response => response.json()), { totals: { memories: 2 }, memories: [{ id: 'memory-one' }] });
   assert.equal((await fetch(server.url, { method: 'POST' })).status, 401);

@@ -30,6 +30,12 @@ export interface ModelStatus {
   embeddingLoaded: boolean;
   error?: { code: ModelErrorCode; message: string; retryable: boolean };
   modelVersion: string;
+  models?: Partial<Record<'generation' | 'embedding' | 'runtime', {
+    name: string;
+    repository: string;
+    revision: string;
+    filename: string;
+  }>>;
 }
 
 export interface LocalModels {
@@ -51,6 +57,7 @@ export interface Resource {
   size: number;
   sha256: string;
   license: string;
+  release?: string;
 }
 
 export interface ModelManifest {

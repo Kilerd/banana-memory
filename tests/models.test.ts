@@ -82,6 +82,9 @@ test('local model API validates sources, normalizes embeddings and releases proc
   const { directory, models, good } = await localFixture(t);
   await assert.rejects(models.embed('question', 'query'), { code: 'MODEL_PREPARING' });
   await models.prepare(); assert.equal(models.status().phase, 'ready');
+  assert.equal(models.status().models?.generation?.name, 'fixture');
+  assert.equal(models.status().models?.embedding?.filename, 'fixture.gguf');
+  assert.equal(models.status().models?.runtime?.repository, 'test/fixture');
   const vector = await models.embed('project', 'document'); assert.equal(vector.length, 1024); assert.equal(Math.hypot(...vector), 1);
   assert.deepEqual(await models.extract([{ id: 'e1', text: 'Use pnpm 9, not npm.', role: 'user' }]), [good]);
   const preference = { ...good, type: 'preference', scope: 'global', text: 'I prefer Nova in every project.', evidence: [{ sourceId: 'e1', quote: 'I prefer Nova in every project.' }] } as const;

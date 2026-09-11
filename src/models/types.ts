@@ -30,6 +30,10 @@ export interface ModelStatus {
   embeddingLoaded: boolean;
   error?: { code: ModelErrorCode; message: string; retryable: boolean };
   modelVersion: string;
+  /** Vector-index identity. It changes only when embedding semantics change. */
+  embeddingVersion?: string;
+  /** Previous identities with byte-for-byte compatible embedding semantics. */
+  compatibleEmbeddingVersions?: string[];
   models?: Partial<Record<'generation' | 'embedding' | 'runtime', {
     name: string;
     repository: string;
@@ -62,6 +66,8 @@ export interface Resource {
 
 export interface ModelManifest {
   version: string;
+  embeddingVersion: string;
+  compatibleEmbeddingVersions?: string[];
   platform: string;
   arch: string;
   resources: Resource[];

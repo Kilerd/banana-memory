@@ -34,7 +34,11 @@ export interface ManagedLocalModelsOptions {
 /** Only this adapter can start inference processes; it never writes memory data. */
 export class ManagedLocalModels implements LocalModels {
   private manifest?: ModelManifest;
-  private state: ModelStatus = { phase: 'initializing', generationLoaded: false, embeddingLoaded: false, modelVersion: 'qwen3-q8-b10809-v1' };
+  private state: ModelStatus = {
+    phase: 'initializing', generationLoaded: false, embeddingLoaded: false,
+    modelVersion: 'qwen3-8b-q4km-b10809-v2', embeddingVersion: 'qwen3-embedding-0.6b-q8-370f27d7-last-l2-v1',
+    compatibleEmbeddingVersions: ['qwen3-q8-b10809-v1'],
+  };
   private prepared = false;
   private preparation?: Promise<void>;
   private running: Partial<Record<'generation' | 'embedding', RunningModel>> = {};
@@ -62,7 +66,7 @@ export class ManagedLocalModels implements LocalModels {
         this.manifest = JSON.parse(await readFile(this.options.manifestPath ?? DEFAULT_MANIFEST_PATH, 'utf8'));
         const manifest = this.manifest!;
         if (process.platform !== manifest.platform || process.arch !== manifest.arch) throw new ModelError('UNSUPPORTED_PLATFORM', 'This release supports macOS Apple Silicon only.');
-        this.update({ phase: 'initializing', error: undefined, modelVersion: manifest.version, models: Object.fromEntries(manifest.resources.map(resource => [resource.id, modelIdentity(resource)])) });
+        this.update({ phase: 'initializing', error: undefined, modelVersion: manifest.version, embeddingVersion: manifest.embeddingVersion, compatibleEmbeddingVersions: manifest.compatibleEmbeddingVersions, models: Object.fromEntries(manifest.resources.map(resource => [resource.id, modelIdentity(resource)])) });
         await new ResourceDownloader({ directory: this.options.directory, resources: manifest.resources, signal: this.abort.signal, onProgress: progress => this.update({ phase: 'downloading', ...progress }) }).prepare(retry);
         this.abort.signal.throwIfAborted();
         await this.unpackRuntime();
@@ -238,7 +242,7 @@ export class ManagedLocalModels implements LocalModels {
       // HTTP records are model-mediated assistant observations. An explicit
       // first-person statement may remain a candidate preference, but its
       // source role still prevents it from receiving direct-user authority.
-      if (c.type === 'preference' && c.sourceIds.some((id: string) => !events.some(e => e.id === id && /^(?:我(?:明确)?(?:偏好|喜欢|希望|要求)|I (?:prefer|want|like)\b)/i.test(e.text.trim())))) return false;
+      if (c.type === 'preference' && c.sourceIds.some((id: string) => !events.some(e => e.id === id && /^(?:我(?:明确)?(?:偏好|喜欢|希望|要求)|I (?:prefer|want|like)\b)/i.test(e.text.trim())))) c.type = 'fact';
       if (c.type === 'episode' || c.type === 'experience') c.scope = 'project';
       if (events.some(e => e.truncated && c.sourceIds.includes(e.id))) c.confidence = Math.min(c.confidence, 0.79);
       // Keep complete short source context: a small model can omit a critical

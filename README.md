@@ -2,7 +2,7 @@
 
 在本机运行的项目记忆服务。Claude Code 通过一个全局 Agent Skill 决定何时召回和记录，通过 Streamable HTTP MCP 访问本机的 Qwen3、llama.cpp 和 LanceDB。
 
-当前提供 **macOS Apple Silicon 本地试用版**。首次模型和运行时下载约 **2.48 GB**，请预留至少 8 GB 可用空间。当前完整验证机器是 M4 Pro / 48 GiB；16 GB 机器验证仍是正式发布门槛，详细证据见 [验收记录](docs/validation.md)。
+当前提供 **macOS Apple Silicon 本地试用版**。生成使用 Qwen3-8B Q4_K_M，首次模型和运行时下载约 **5.68 GB**，请预留至少 10 GB 可用空间。8B 模型小样本已在 M4 / 32 GiB 上验证；16 GB 机器验证仍是正式发布门槛，详细证据见 [验收记录](docs/validation.md)。
 
 ## 安装与使用
 

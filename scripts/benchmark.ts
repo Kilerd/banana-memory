@@ -60,7 +60,9 @@ async function verifyPersistedDataset(): Promise<{ events: number; memories: num
     const memories = await table.countRows("kind = 'memory'");
     const vectorMemories = await table.countRows("kind = 'memory' AND vector IS NOT NULL");
     const metadata = await table.query().where("kind = 'memory'").select(['data']).toArray();
-    const matchingEmbeddingVersion = metadata.filter(row => (JSON.parse(String(row.data)) as { embeddingVersion?: string }).embeddingVersion === models.status().modelVersion).length;
+    const status = models.status();
+    const compatibleEmbeddingVersions = new Set([status.embeddingVersion ?? status.modelVersion, ...(status.compatibleEmbeddingVersions ?? [])]);
+    const matchingEmbeddingVersion = metadata.filter(row => compatibleEmbeddingVersions.has(String((JSON.parse(String(row.data)) as { embeddingVersion?: string }).embeddingVersion))).length;
     if (events !== eventCount || memories !== memoryCount || vectorMemories !== memoryCount || matchingEmbeddingVersion !== memoryCount) {
       throw new Error(`Persisted dataset mismatch: ${events} events, ${memories} memories, ${vectorMemories} vectors, ${matchingEmbeddingVersion} current-model vectors`);
     }

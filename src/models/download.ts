@@ -64,7 +64,9 @@ export class ResourceDownloader {
         if (available < resource.size - offset + (this.options.reserveBytes ?? 1024 ** 3)) throw new ModelError('DISK_FULL', `Insufficient disk space for ${resource.filename}; free at least ${resource.size - offset + (this.options.reserveBytes ?? 1024 ** 3)} bytes.`);
         this.options.onProgress?.({ resource: resource.id, downloadedBytes: offset, totalBytes: resource.size });
         if (offset < resource.size) {
-          const timeout = AbortSignal.timeout(30 * 60_000);
+          // The 8B artifact can take well over 30 minutes on a normal home
+          // connection. User shutdown still aborts immediately via signal.
+          const timeout = AbortSignal.timeout(2 * 60 * 60_000);
           const requestSignal = signal ? AbortSignal.any([signal, timeout]) : timeout;
           const response = await (this.options.fetch ?? fetch)(resource.url, { headers: offset ? { Range: `bytes=${offset}-`, 'Accept-Encoding': 'identity' } : { 'Accept-Encoding': 'identity' }, signal: requestSignal });
           if (!response.ok || !response.body) throw new ModelError('DOWNLOAD_FAILED', `Download of ${resource.filename} failed (HTTP ${response.status}).`);

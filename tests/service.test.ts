@@ -15,6 +15,41 @@ function fixtureModels(extract?: (events: ModelEvent[]) => Promise<MemoryCandida
   };
 }
 
+function versionedModels(modelVersion: string, embeddingVersion: string, compatibleEmbeddingVersions: string[] = []): LocalModels {
+  const models = fixtureModels();
+  return {
+    ...models,
+    status: () => ({ phase: 'ready', generationLoaded: true, embeddingLoaded: true, modelVersion, embeddingVersion, compatibleEmbeddingVersions }),
+    embed: async () => [1, ...Array(1023).fill(0)],
+  };
+}
+
+test('a generation-model upgrade reuses vectors from a compatible embedding identity', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'banana-embedding-version-'));
+  let service = await MemoryService.open(dir, { models: versionedModels('old-generation', 'legacy-bundle-id') });
+  try {
+    const scope = await service.bind({ workspace: '/workspace/app', sessionId: 'one', origin: 'hook' });
+    await service.record(scope, { id: 'fact', text: '项目使用 pnpm 10。', role: 'user' });
+    await service.processPending();
+    assert.equal((await service.inspect(scope)).vectorQueue, 0);
+    await service.close();
+
+    let phase: 'initializing' | 'ready' = 'initializing';
+    const upgraded = versionedModels('new-generation', 'embedding-v2', ['legacy-bundle-id']);
+    upgraded.status = () => ({
+      phase, generationLoaded: phase === 'ready', embeddingLoaded: phase === 'ready', modelVersion: 'new-generation',
+      embeddingVersion: 'embedding-v2', compatibleEmbeddingVersions: phase === 'ready' ? ['legacy-bundle-id'] : [],
+    });
+    service = await MemoryService.open(dir, { models: upgraded });
+    const reopened = await service.bind({ workspace: '/workspace/app', sessionId: 'two', origin: 'hook' });
+    assert.equal((await service.inspect(reopened)).vectorQueue, 0);
+    phase = 'ready';
+    await service.processPending();
+    assert.equal((await service.inspect(reopened)).vectorQueue, 0);
+    assert.equal((await service.recall(reopened, 'pnpm')).memories.length, 1);
+  } finally { await service.close(); await rm(dir, { recursive: true, force: true }); }
+});
+
 test('acknowledged events survive restart, deduplicate ten retries, and stay within their workspace', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'banana-service-'));
   let service: MemoryService | undefined;

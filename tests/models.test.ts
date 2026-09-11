@@ -12,6 +12,20 @@ const content = Buffer.from('a-pinned-model-resource');
 function resource(): Resource { return { id: 'embedding', repository: 'test/fixture', revision: 'abc', filename: 'fixture.gguf', size: content.length, sha256: createHash('sha256').update(content).digest('hex'), url: 'https://example.test/fixture', license: 'MIT' }; }
 async function temporary(t: { after: (fn: () => Promise<unknown>) => void }) { const dir = await mkdtemp(path.join(os.tmpdir(), 'banana-models-')); t.after(() => rm(dir, { recursive: true, force: true })); return dir; }
 
+test('release manifest pins the Qwen3 8B Q4_K_M generation artifact', async () => {
+  const manifest = JSON.parse(await readFile(path.resolve('models/manifest.json'), 'utf8')) as ModelManifest;
+  const generation = manifest.resources.find(resource => resource.id === 'generation');
+  assert.deepEqual(generation && {
+    repository: generation.repository, revision: generation.revision, filename: generation.filename,
+    size: generation.size, sha256: generation.sha256,
+  }, {
+    repository: 'Qwen/Qwen3-8B-GGUF', revision: '7c41481f57cb95916b40956ab2f0b139b296d974', filename: 'Qwen3-8B-Q4_K_M.gguf',
+    size: 5027783488, sha256: 'd98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785',
+  });
+  assert.equal(manifest.embeddingVersion, 'qwen3-embedding-0.6b-q8-370f27d7-last-l2-v1');
+  assert.ok(manifest.compatibleEmbeddingVersions?.includes('qwen3-q8-b10809-v1'));
+});
+
 test('resources resume a partial file, verify it, then reuse the atomic cache offline', async t => {
   const directory = await temporary(t); const res = resource();
   await writeFile(path.join(directory, res.filename + '.part'), content.subarray(0, 8));
@@ -69,7 +83,7 @@ async function localFixture(t: { after: (fn: () => Promise<unknown>) => void }, 
   const res = resource(); await writeFile(path.join(directory, res.filename), content);
   const fakeServer = `#!${process.execPath}\nimport http from 'node:http';\nimport fs from 'node:fs';\nconst port=Number(process.argv[process.argv.indexOf('--port')+1]);\nif(process.argv[process.argv.indexOf('--host')+1]!=='127.0.0.1'||!process.env.LLAMA_API_KEY)process.exit(2);\nhttp.createServer(async(req,res)=>{if(req.headers.authorization!=='Bearer '+process.env.LLAMA_API_KEY){res.writeHead(401);res.end();return;}let body='';for await(const b of req)body+=b;const data=body?JSON.parse(body):{};let result={status:'ok'};if(req.url==='/apply-template')result={prompt:JSON.stringify(data.messages)};if(req.url==='/tokenize')result={tokens:Array(Math.ceil(data.content.length/3)).fill(1)};if(req.url==='/v1/embeddings'&&fs.existsSync(new URL('./slow',import.meta.url)))await new Promise(r=>setTimeout(r,100));if(req.url==='/v1/embeddings')result={data:[{embedding:[2,...Array(1023).fill(0)]}]};if(req.url==='/v1/chat/completions'&&fs.existsSync(new URL('./crash',import.meta.url)))process.exit(17);if(req.url==='/v1/chat/completions')result={choices:[{message:{content:fs.readFileSync(new URL('./candidates.json',import.meta.url),'utf8')}}]};res.setHeader('Content-Type','application/json');res.end(JSON.stringify(result));}).listen(port,'127.0.0.1');`;
   await writeFile(path.join(directory, 'server.mjs'), fakeServer, { mode: 0o700 });
-  const manifest: ModelManifest = { version: 'fixture', platform: process.platform, arch: process.arch, resources: [{ ...res, id: 'generation' }, res, { ...res, id: 'runtime' }], runtimeExecutable: 'server.mjs', generation: { inputTokens: 4096, outputTokens: 768, contextTokens: 5120 }, embedding: { dimensions: 1024, pooling: 'last', normalization: 'l2', queryInstruction: 'Find project memories' } };
+  const manifest: ModelManifest = { version: 'fixture', embeddingVersion: 'fixture-embedding-v1', platform: process.platform, arch: process.arch, resources: [{ ...res, id: 'generation' }, res, { ...res, id: 'runtime' }], runtimeExecutable: 'server.mjs', generation: { inputTokens: 4096, outputTokens: 768, contextTokens: 5120 }, embedding: { dimensions: 1024, pooling: 'last', normalization: 'l2', queryInstruction: 'Find project memories' } };
   await writeFile(path.join(directory, 'manifest.json'), JSON.stringify(manifest));
   const good = { type: 'fact', scope: 'project', text: 'Use pnpm 9, not npm.', sourceIds: ['e1'], evidence: [{ sourceId: 'e1', quote: 'Use pnpm 9, not npm.' }], conditions: [], confidence: 0.99 } as const;
   await writeFile(path.join(directory, 'candidates.json'), JSON.stringify({ candidates: [good, { ...good, text: 'hallucinated' }, { ...good, sourceIds: ['absent'] }] }));
@@ -82,6 +96,7 @@ test('local model API validates sources, normalizes embeddings and releases proc
   const { directory, models, good } = await localFixture(t);
   await assert.rejects(models.embed('question', 'query'), { code: 'MODEL_PREPARING' });
   await models.prepare(); assert.equal(models.status().phase, 'ready');
+  assert.equal(models.status().embeddingVersion, 'fixture-embedding-v1');
   assert.equal(models.status().models?.generation?.name, 'fixture');
   assert.equal(models.status().models?.embedding?.filename, 'fixture.gguf');
   assert.equal(models.status().models?.runtime?.repository, 'test/fixture');
@@ -90,6 +105,9 @@ test('local model API validates sources, normalizes embeddings and releases proc
   const preference = { ...good, type: 'preference', scope: 'global', text: 'I prefer Nova in every project.', evidence: [{ sourceId: 'e1', quote: 'I prefer Nova in every project.' }] } as const;
   await writeFile(path.join(directory, 'candidates.json'), JSON.stringify({ candidates: [preference] }));
   assert.deepEqual(await models.extract([{ id: 'e1', text: preference.text, role: 'assistant' }]), [preference]);
+  const projectRule = { ...good, type: 'preference', text: 'The project uses pnpm 10.', evidence: [{ sourceId: 'e1', quote: 'The project uses pnpm 10.' }] } as const;
+  await writeFile(path.join(directory, 'candidates.json'), JSON.stringify({ candidates: [projectRule] }));
+  assert.equal((await models.extract([{ id: 'e1', text: projectRule.text, role: 'user' }]))[0]?.type, 'fact');
   await new Promise(r => setTimeout(r, 80)); assert.equal(models.status().generationLoaded, false);
   await writeFile(path.join(directory, 'slow'), '1');
   const started = performance.now();

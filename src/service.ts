@@ -7,6 +7,14 @@ import { digest, MemoryError, POLICY_VERSION, tokenCount, lexicalScore, effectiv
 import { environmentDependencies, temporalFields, canConsolidate, conflictCandidate, experienceId, versionMatches } from './consolidation.js';
 
 export interface ServiceOptions { models?: LocalModels; now?: () => number }
+function embeddingVersion(models: LocalModels): string {
+  const status = models.status();
+  return status.embeddingVersion ?? status.modelVersion;
+}
+function compatibleEmbeddingVersions(models: LocalModels): Set<string> {
+  const status = models.status();
+  return new Set([status.embeddingVersion ?? status.modelVersion, ...(status.compatibleEmbeddingVersions ?? [])]);
+}
 export class MemoryService {
   private records = new Map<string, StoredRecord>();
   private indexes = new Map<string, Set<string>>();
@@ -30,9 +38,9 @@ export class MemoryService {
         await service.publish([{ ...pending, version: pending.version + 1, data: { ...pending.data, state: result.complete ? 'done' : 'pending', result } }]);
       } catch { /* Sources stay revoked; the next startup can resume physical cleanup. */ }
     }
-    if (options.models) {
-      const stale = [...service.records.values()].filter(row => row.kind === 'memory' && (!row.vector || row.data.embeddingVersion !== options.models!.status().modelVersion));
-      if (stale.length) await service.publish(stale.map(row => service.vectorJob(row)));
+    if (options.models?.status().phase === 'ready') {
+      const stale = service.staleVectorJobs(options.models);
+      if (stale.length) await service.publish(stale);
     }
     return service;
   }
@@ -340,6 +348,10 @@ export class MemoryService {
   private async work(limit: number): Promise<void> {
     const models = this.options.models;
     if (!models || this.closed || models.status().phase !== 'ready') return;
+    await this.exclusive(async () => {
+      const stale = this.staleVectorJobs(models);
+      if (stale.length) await this.publish(stale);
+    });
     for (let n = 0; n < limit && !this.closed; n++) {
       const snapshot = await this.exclusive(async () => {
         const job = [...this.records.values()].find(row => row.kind === 'job' && (row.data.state === 'queued' || row.data.state === 'failed') && Number(row.data.attempts) < 3 && Number(row.data.retryAt ?? 0) <= this.now() && !this.records.get(row.projectId)?.data.paused);
@@ -392,7 +404,7 @@ export class MemoryService {
               createdAt: old?.createdAt ?? this.timestamp(), updatedAt: this.timestamp(), pinned: old?.pinned ?? false,
               modelVersion: models.status().modelVersion, policyVersion: POLICY_VERSION, ...temporalFields(text, event.taskId), reason: 'Extracted from cited original evidence; no universal success inferred.' };
             if (data.temporary && this.records.get('task:' + digest(source.projectId + event.taskId))?.data.completed) { data.state = 'archived'; data.reason = 'The user already confirmed this task complete'; }
-            if (vectors.has(candidate)) data.embeddingVersion = models.status().modelVersion;
+            if (vectors.has(candidate)) data.embeddingVersion = embeddingVersion(models);
             const memory = { id, kind: 'memory', projectId: source.projectId, version: (previous?.version ?? 0) + 1, data, text, vector: vectors.get(candidate) };
             for (const existing of this.rows({ projectId: source.projectId } as Scope, 'memory')) {
               if (existing.id !== id && (existing.data as MemoryData).state === 'active' && conflictCandidate(existing.data as MemoryData, data)) {
@@ -424,7 +436,16 @@ export class MemoryService {
     await this.fillVectors(limit);
   }
   private vectorJob(memory: StoredRecord): StoredRecord {
-    return { id: 'v:' + memory.id + ':' + memory.version, kind: 'vector-job', projectId: memory.projectId, version: 1, data: { memoryId: memory.id, memoryVersion: memory.version, state: 'queued', attempts: 0 } };
+    const id = 'v:' + memory.id + ':' + memory.version;
+    const previous = this.records.get(id);
+    return { id, kind: 'vector-job', projectId: memory.projectId, version: previous?.kind === 'vector-job' ? previous.version + 1 : 1, data: { memoryId: memory.id, memoryVersion: memory.version, state: 'queued', attempts: 0 } };
+  }
+  private staleVectorJobs(models: LocalModels): StoredRecord[] {
+    const compatibleVersions = compatibleEmbeddingVersions(models);
+    return [...this.records.values()].filter(row => row.kind === 'memory' && (!row.vector || !compatibleVersions.has(String(row.data.embeddingVersion)))).flatMap(memory => {
+      const existing = this.records.get('v:' + memory.id + ':' + memory.version);
+      return existing?.kind === 'vector-job' && existing.data.memoryVersion === memory.version && ['queued', 'running', 'failed'].includes(String(existing.data.state)) ? [] : [this.vectorJob(memory)];
+    });
   }
   private async fillVectors(limit: number): Promise<void> {
     const models = this.options.models;
@@ -444,7 +465,7 @@ export class MemoryService {
         await this.exclusive(async () => {
           const current = this.records.get(next.memory.id), project = this.records.get(next.memory.projectId)!;
           if (project.data.paused || project.data.generation !== next.generation || current?.kind !== 'memory' || current.version !== next.memory.version) return;
-          await this.publish([{ ...current, vector, data: { ...current.data, embeddingVersion: models.status().modelVersion } }, { ...next.job, data: { ...next.job.data, state: 'done' } }]);
+          await this.publish([{ ...current, vector, data: { ...current.data, embeddingVersion: embeddingVersion(models) } }, { ...next.job, data: { ...next.job.data, state: 'done' } }]);
         });
       } catch {
         await this.exclusive(async () => {
@@ -522,9 +543,9 @@ export class MemoryService {
       if (generation !== this.generation(scope) || this.project(scope).data.paused) return empty('CONTROL_CHANGED');
       if (queryVector) {
         try {
-          const embeddingVersion = this.options.models?.status().modelVersion;
-          const local = (await this.store.searchVector(scope.projectId, queryVector, 20)).filter(row => row.data.embeddingVersion === embeddingVersion);
-          const global = this.visibleMemories(scope).filter(row => row.projectId !== scope.projectId && row.vector && row.data.embeddingVersion === embeddingVersion)
+          const compatibleVersions = this.options.models && compatibleEmbeddingVersions(this.options.models);
+          const local = (await this.store.searchVector(scope.projectId, queryVector, 20)).filter(row => compatibleVersions?.has(String(row.data.embeddingVersion)));
+          const global = this.visibleMemories(scope).filter(row => row.projectId !== scope.projectId && row.vector && compatibleVersions?.has(String(row.data.embeddingVersion)))
             .map(row => ({ row, score: row.vector!.reduce((sum, value, index) => sum + value * (queryVector![index] ?? 0), 0) }))
             .sort((left, right) => right.score - left.score).slice(0, 20).map(item => item.row);
           vectorRows = [...new Map([...local, ...global].map(row => [row.id, row])).values()];

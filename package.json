@@ -1,18 +1,50 @@
 {
   "name": "banana-memory",
-  "version": "0.1.0",
-  "private": true,
-  "description": "Local, automatic, source-grounded memory for Claude Code",
+  "version": "0.1.1",
+  "description": "Local, source-grounded project memory over Streamable HTTP MCP",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kilerd/banana-memory.git"
+  },
+  "homepage": "https://github.com/Kilerd/banana-memory#readme",
+  "keywords": [
+    "mcp",
+    "memory",
+    "agent-skills",
+    "claude-code",
+    "local-first"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
-  "overrides": { "sharp": "0.35.4" },
+  "os": [
+    "darwin"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "files": [
+    "dist/src/",
+    "models/",
+    "skills/banana-memory/",
+    "LICENSE",
+    "README.md",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "overrides": {
+    "sharp": "0.35.4"
+  },
   "engines": {
-    "node": "22.23.1"
+    "node": ">=22.23.1"
   },
   "bin": {
     "banana-memory": "dist/src/cli.js"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "prepack": "npm run build",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test --test-concurrency=1 tests/*.test.ts",
     "test:service": "tsx --test tests/service.test.ts",
@@ -29,6 +61,7 @@
     "@modelcontextprotocol/sdk": "1.30.0",
     "apache-arrow": "18.1.0",
     "proper-lockfile": "4.1.2",
+    "sharp": "0.35.4",
     "zod": "4.6.1"
   },
   "devDependencies": {

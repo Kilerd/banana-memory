@@ -11,6 +11,18 @@ try {
   } else if (command === 'mcp') {
     const { runMcp } = await import('./host/mcp.js');
     await runMcp(dataDirectory(), cliPath);
+  } else if (command === 'start' || command === 'serve') {
+    const flags = process.argv.slice(3);
+    const portIndex = flags.indexOf('--port');
+    const port = portIndex >= 0 ? Number(flags[portIndex + 1]) : undefined;
+    if (portIndex >= 0 && (!flags[portIndex + 1] || !Number.isSafeInteger(port))) throw new Error('invalid_http_port');
+    if (flags.some((flag, index) => flag !== '--port' && index !== portIndex + 1)) throw new Error('invalid_http_option');
+    const [{ createBackend }, { startHttpServer }] = await Promise.all([import('./backend.js'), import('./host/http.js')]);
+    const instance = await startHttpServer({ dataDir: dataDirectory(), createBackend, port });
+    process.stdout.write(`Banana Memory is running in the foreground.\nMCP: ${instance.url}\nData: ${dataDirectory()}\n\nAdd it to Claude Code once:\nclaude mcp add --transport http --scope user --header \"Authorization: Bearer ${instance.token}\" -- banana-memory ${instance.url}\n\nPress Ctrl+C to stop.\n`);
+    const close = () => { void instance.close().finally(() => { process.exitCode = 0; }); };
+    process.once('SIGTERM', close); process.once('SIGINT', close);
+    await instance.done;
   } else if (command === 'kernel') {
     const { startKernel } = await import('./host/kernel.js');
     const instance = await startKernel({ dataDir: dataDirectory(), createBackend: async dataDir => {
@@ -36,7 +48,7 @@ try {
       process.stdout.write(JSON.stringify(result) + '\n');
     } finally { client.close(); }
   } else {
-    process.stderr.write('Usage: banana-memory <mcp|kernel|hook EVENT|models-retry>\n');
+    process.stderr.write('Usage: banana-memory <start [--port PORT]|serve [--port PORT]|mcp|kernel|hook EVENT|models-retry>\n');
     process.exitCode = 1;
   }
 } catch (error) {

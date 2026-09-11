@@ -80,7 +80,7 @@ export class MemoryService {
   private project(scope: Scope): StoredRecord { this.check(scope); return this.records.get(scope.projectId)!; }
   private generation(scope: Scope): number { return Number(this.project(scope).data.generation); }
   async bind(identity: HostIdentity): Promise<Scope> {
-    const scope: Scope = { projectId: (identity.workspace ? 'p:' : 's:') + digest(identity.workspace ?? identity.sessionId), sessionId: identity.sessionId, origin: identity.origin, reason: identity.scopeReason };
+    const scope: Scope = { projectId: (identity.workspace ? 'p:' : 's:') + digest(identity.workspace ?? identity.sessionId), sessionId: identity.sessionId, origin: identity.origin, reason: identity.scopeReason, includeCandidates: identity.includeCandidates };
     this.scopes.add(scope);
     await this.exclusive(async () => {
       if (!this.records.has(scope.projectId)) await this.publish([{ id: scope.projectId, kind: 'project', projectId: scope.projectId, version: 1, data: { workspace: identity.workspace, paused: false, generation: 0, environment: {} } }]);
@@ -508,7 +508,7 @@ export class MemoryService {
       const eligible = this.rows(scope, 'memory').filter(row => {
         const data = row.data as MemoryData;
         const state = effectiveState(data, this.now(), environment);
-        return (state === 'active' || mode === 'history' && ['archived', 'review', 'superseded'].includes(state)) && data.sources.every(id => this.records.get(id)?.kind === 'event');
+        return (state === 'active' || scope.includeCandidates && state === 'candidate' || mode === 'history' && ['archived', 'review', 'superseded'].includes(state)) && data.sources.every(id => this.records.get(id)?.kind === 'event');
       });
       const scores = new Map<string, number>();
       const lexical = eligible.map(row => ({ row, score: query ? lexicalScore(query, String(row.data.text)) : 1 })).filter(item => item.score > 0).sort((a, b) => b.score - a.score).slice(0, 20);
@@ -548,7 +548,7 @@ export class MemoryService {
         if (row?.version !== memory.version || row.kind !== 'memory') return false;
         const data = row.data as MemoryData;
         const state = effectiveState(data, this.now(), environment);
-        return (state === 'active' || bundle.mode === 'history' && ['archived', 'review', 'superseded'].includes(state)) && data.sources.every(id => this.records.get(id)?.kind === 'event');
+        return (state === 'active' || scope.includeCandidates && state === 'candidate' || bundle.mode === 'history' && ['archived', 'review', 'superseded'].includes(state)) && data.sources.every(id => this.records.get(id)?.kind === 'event');
       });
       if (!valid) return { ...bundle, memories: [], text: '', tokens: 0, degradation: 'CONTROL_CHANGED', delivered: false };
       const stored = this.records.get(bundle.id);

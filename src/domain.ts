@@ -9,7 +9,7 @@ export type ErrorCode = 'PAUSED' | 'UNAUTHORIZED' | 'VERSION_CONFLICT' | 'SOURCE
 export class MemoryError extends Error {
   constructor(public code: ErrorCode, message: string) { super(message); this.name = 'MemoryError'; }
 }
-export interface Scope { projectId: string; sessionId: string; origin: 'hook' | 'mcp'; reason?: string }
+export interface Scope { projectId: string; sessionId: string; origin: 'hook' | 'mcp'; reason?: string; includeCandidates?: boolean }
 export interface EventInput {
   id: string; text: string; role?: 'user' | 'assistant' | 'tool' | 'system';
   taskId?: string; sourceRoot?: string; occurredAt?: string; truncated?: boolean;

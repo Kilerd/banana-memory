@@ -228,3 +228,19 @@ test('local extraction publishes sourced facts and bounded recall; model records
     assert.equal((await service.recall(scope, 'unsafe-tool')).memories.length, 0);
   } finally { await service.close(); await rm(dir, { recursive: true, force: true }); }
 });
+
+test('HTTP Skill mode retrieves model-mediated observations as labelled candidates without granting user authority', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'banana-http-candidates-'));
+  const service = await MemoryService.open(dir, { models: fixtureModels() });
+  try {
+    const strict = await service.bind({ workspace: '/workspace/app', sessionId: 'strict', origin: 'mcp' });
+    const http = await service.bind({ workspace: '/workspace/app', sessionId: 'http', origin: 'mcp', includeCandidates: true });
+    await service.record(http, { id: 'observation', text: 'The local API uses port 7443.', role: 'user' });
+    await service.processPending();
+    assert.equal((await service.recall(strict, '7443')).memories.length, 0);
+    const recalled = await service.deliver(http, await service.recall(http, '7443'));
+    assert.equal(recalled.memories.length, 1);
+    assert.equal(recalled.memories[0]?.state, 'candidate');
+    assert.match(recalled.text, /candidate/);
+  } finally { await service.close(); await rm(dir, { recursive: true, force: true }); }
+});

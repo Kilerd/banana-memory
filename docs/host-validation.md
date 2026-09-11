@@ -4,7 +4,7 @@
 
 ## 固定安装形态
 
-只有一种持久安装形态：同一个 Claude Code 插件包含 Skill、六个生命周期 hooks 和一个 STDIO MCP 服务。源码安装器先构建自包含本地 marketplace，再交给 Claude 官方安装命令，避免插件复制到缓存后丢失相对路径。没有虚构 npm 发布包或在线分发地址。
+本报告验证的是 Claude Code 插件增强模式：同一个插件包含 Skill、六个生命周期 hooks 和一个 STDIO MCP 服务。源码安装器先构建自包含本地 marketplace，再交给 Claude 官方安装命令，避免插件复制到缓存后丢失相对路径。本报告早于 HTTP MCP 标准模式及其 npm 发布准备，不作为后者的端到端证据。
 
 源码目录安装（先将 Node.js 22.23.1 放入 PATH）：
 

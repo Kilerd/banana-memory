@@ -4,6 +4,9 @@ export interface HostIdentity {
   sessionId: string;
   origin: 'hook' | 'mcp';
   scopeReason?: string;
+  /** HTTP + Skill mode has no trusted host hooks, so it may retrieve clearly
+   * labelled candidate memories without granting them user authority. */
+  includeCandidates?: boolean;
 }
 
 export type HookName = 'SessionStart' | 'UserPromptSubmit' | 'PostToolUse' | 'PostToolUseFailure' | 'Stop' | 'SessionEnd';

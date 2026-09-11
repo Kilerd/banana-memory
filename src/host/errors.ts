@@ -5,6 +5,8 @@ const HOST_CODES = new Set([
   'paused', 'version_conflict', 'source_deleted', 'timeout', 'invalid_input', 'model_preparing',
   'download_failed', 'disk_full', 'model_stopped', 'model_busy', 'model_timeout', 'model_unavailable',
   'checksum_mismatch', 'unsupported_platform', 'model_output_invalid', 'model_failed',
+  'http_body_limit', 'invalid_http_token', 'invalid_http_port', 'invalid_http_option',
+  'server_already_running', 'http_request_failed',
 ]);
 
 /** Return stable error categories without emitting exception messages that may contain source text. */

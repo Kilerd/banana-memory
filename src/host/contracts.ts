@@ -45,6 +45,8 @@ export interface ServerBackend {
   bind(identity: HostIdentity): Promise<unknown>;
   handleHook(context: unknown, event: NormalizedEvent, intent?: ExplicitIntent): Promise<HookResult>;
   call(context: unknown, tool: MemoryTool, args: Record<string, unknown>): Promise<unknown>;
+  /** Local authenticated UI snapshot; contains memory text and provenance. */
+  dashboard?(): Promise<unknown>;
   /** Explicit local CLI retry; the same kernel remains the only model owner. */
   retryModels?(): Promise<unknown>;
   close(): Promise<void>;

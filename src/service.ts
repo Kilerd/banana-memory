@@ -1,10 +1,10 @@
 import { randomUUID } from 'node:crypto';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { UnifiedStore, type StoredRecord } from './store.js';
 import type { LocalModels, MemoryCandidate } from './models/types.js';
 import type { HostIdentity, ExplicitIntent } from './host/contracts.js';
-import { digest, MemoryError, POLICY_VERSION, tokenCount, lexicalScore, effectiveState, ageWeight, isDirectUserStatement, classifyOutcome, type MemoryData, type EventData, type EventInput, type Scope, type ContextBundle, type RecallMemory } from './domain.js';
-import { environmentDependencies, temporalFields, canConsolidate, conflictCandidate, experienceId } from './consolidation.js';
+import { digest, MemoryError, POLICY_VERSION, tokenCount, lexicalScore, effectiveState, ageWeight, memoryScope, isDirectUserStatement, classifyOutcome, type MemoryData, type EventData, type EventInput, type Scope, type ContextBundle, type RecallMemory } from './domain.js';
+import { environmentDependencies, temporalFields, canConsolidate, conflictCandidate, experienceId, versionMatches } from './consolidation.js';
 
 export interface ServiceOptions { models?: LocalModels; now?: () => number }
 export class MemoryService {
@@ -77,6 +77,11 @@ export class MemoryService {
   private rows(scope: Scope, kind?: string): StoredRecord[] {
     return [...(this.indexes.get(scope.projectId + (kind ? '/' + kind : '')) ?? [])].map(id => this.records.get(id)!);
   }
+  private visibleMemories(scope: Scope): StoredRecord[] {
+    const local = this.rows(scope, 'memory');
+    const global = [...this.records.values()].filter(row => row.kind === 'memory' && row.projectId !== scope.projectId && memoryScope(row.data as MemoryData) === 'global');
+    return [...local, ...global];
+  }
   private project(scope: Scope): StoredRecord { this.check(scope); return this.records.get(scope.projectId)!; }
   private generation(scope: Scope): number { return Number(this.project(scope).data.generation); }
   async bind(identity: HostIdentity): Promise<Scope> {
@@ -94,14 +99,19 @@ export class MemoryService {
       if (this.project(scope).data.paused) return { id: '', status: 'paused' };
       const id = 'e:' + digest(scope.projectId + ':' + input.id);
       const dependencies = new Set<string>();
+      const delivered = this.rows(scope, 'bundle').filter(bundle => bundle.data.delivered && bundle.data.sessionId === scope.sessionId);
+      const deliveredSources = new Set(delivered.flatMap(bundle => bundle.data.sources as string[] ?? []));
+      const deliveredMemories = new Set(delivered.flatMap(bundle => (bundle.data.selected as Array<{ id: string }> | undefined)?.map(selected => selected.id) ?? []));
       for (const sourceId of input.sourceIds ?? []) {
         const source = this.records.get(sourceId);
-        if (!source || source.projectId !== scope.projectId || !['event', 'memory'].includes(source.kind)) throw new MemoryError('UNAUTHORIZED', 'Record sources must belong to this workspace');
+        const sharedEvent = source?.kind === 'event' && deliveredSources.has(sourceId);
+        const sharedMemory = source?.kind === 'memory' && memoryScope(source.data as MemoryData) === 'global' && deliveredMemories.has(sourceId);
+        if (!source || source.projectId !== scope.projectId && !sharedEvent && !sharedMemory || !['event', 'memory'].includes(source.kind)) throw new MemoryError('UNAUTHORIZED', 'Record sources must belong to this workspace or a delivered global memory');
         for (const original of source.kind === 'memory' ? (source.data as MemoryData).sources : [source.id]) dependencies.add(original);
       }
       const role = scope.origin === 'hook' ? input.role ?? 'system' : 'assistant';
       if (role === 'assistant' || role === 'tool') {
-        for (const bundle of this.rows(scope, 'bundle')) if (bundle.data.delivered && bundle.data.sessionId === scope.sessionId) for (const sourceId of bundle.data.sources as string[] ?? []) dependencies.add(sourceId);
+        for (const sourceId of deliveredSources) dependencies.add(sourceId);
       }
       if ([...dependencies].some(sourceId => this.records.get(sourceId)?.kind !== 'event')) throw new MemoryError('SOURCE_DELETED', 'A source of this derived record was withdrawn');
       const root = dependencies.size ? String(this.records.get([...dependencies][0]!)!.data.root) : 'r:' + digest(scope.projectId + ':' + (input.sourceRoot ?? input.id));
@@ -121,8 +131,10 @@ export class MemoryService {
     this.check(scope);
     if (id) {
       const row = this.records.get(id);
-      if (!row || row.projectId !== scope.projectId || !['memory', 'history', 'event', 'bundle'].includes(row.kind)) throw new MemoryError('UNAUTHORIZED', 'Record unavailable');
-      return structuredClone({ ...row, ...(row.kind === 'memory' ? { sources: (row.data as MemoryData).sources.map(id => this.records.get(id)).filter(source => source?.kind === 'event'), history: this.rows(scope, 'history').filter(h => h.data.memoryId === row.id), effectiveState: effectiveState(row.data as MemoryData, this.now(), this.project(scope).data.environment as Record<string, string>) } : {}) });
+      const sharedMemory = row?.kind === 'memory' && memoryScope(row.data as MemoryData) === 'global';
+      if (!row || row.projectId !== scope.projectId && !sharedMemory || !['memory', 'history', 'event', 'bundle'].includes(row.kind)) throw new MemoryError('UNAUTHORIZED', 'Record unavailable');
+      const historyScope = { projectId: row.projectId } as Scope;
+      return structuredClone({ ...row, ...(row.kind === 'memory' ? { scope: memoryScope(row.data as MemoryData), sources: (row.data as MemoryData).sources.map(id => this.records.get(id)).filter(source => source?.kind === 'event'), history: this.rows(historyScope, 'history').filter(h => h.data.memoryId === row.id), effectiveState: effectiveState(row.data as MemoryData, this.now(), this.project(scope).data.environment as Record<string, string>) } : {}) });
     }
     return { projectId: scope.projectId, scopeReason: scope.reason, paused: this.project(scope).data.paused, generation: this.generation(scope), events: this.rows(scope, 'event').length,
       memories: this.rows(scope, 'memory').length, queue: this.rows(scope, 'job').filter(row => row.data.state === 'queued' || row.data.state === 'running').length,
@@ -217,8 +229,8 @@ export class MemoryService {
         const target = this.target(scope, intent.target, intent.expectedVersion, ['memory', 'event']);
         const histories = this.rows(scope, 'history').filter(row => row.data.memoryId === target.id);
         const originals = target.kind === 'event' ? [target.id] : [target, ...histories].flatMap(row => (row.data as MemoryData).sources);
-        const sources = this.dependentSources(scope, [...new Set(originals)]);
-        const affected = this.rows(scope).filter(row => row.kind === 'memory' && (row.data as MemoryData).sources.some(id => sources.includes(id)));
+        const sources = this.dependentSources([...new Set(originals)]);
+        const affected = [...this.records.values()].filter(row => row.kind === 'memory' && (row.data as MemoryData).sources.some(id => sources.includes(id)));
         const id = 'preview:' + randomUUID();
         await this.publish([used, { id, kind: 'preview', projectId: scope.projectId, version: 1, data: { target: target.id, targetVersion: target.version, sources, affected: affected.map(row => row.id), affectedVersions: affected.map(row => ({ id: row.id, version: row.version })), generation: this.generation(scope), expiresAt: this.now() + 5 * 60_000 } }]);
         return { previewId: id, sources, affectedMemories: affected.map(row => ({ id: row.id, version: row.version, text: row.data.text })), notice: 'Deletes entire source events and dependent memories, including old database versions. Other memories from the same events may be affected. Claude history, exports and system backups are outside this deletion.' };
@@ -261,34 +273,41 @@ export class MemoryService {
     const preview = this.records.get(previewId);
     if (!preview || preview.kind !== 'preview' || preview.projectId !== scope.projectId || preview.data.generation !== this.generation(scope) || Number(preview.data.expiresAt) <= this.now()) throw new MemoryError('VERSION_CONFLICT', 'Deletion preview expired or changed');
     this.target(scope, String(preview.data.target), Number(preview.data.targetVersion), ['memory', 'event']);
-    const expanded = this.dependentSources(scope, preview.data.sources as string[]);
+    const expanded = this.dependentSources(preview.data.sources as string[]);
     if (expanded.length !== (preview.data.sources as string[]).length) throw new MemoryError('VERSION_CONFLICT', 'Source dependencies changed; request a new deletion preview');
     const sources = new Set(expanded);
-    const visibleAffected = this.rows(scope, 'memory').filter(row => (row.data as MemoryData).sources.some(id => sources.has(id)));
+    const visibleAffected = [...this.records.values()].filter(row => row.kind === 'memory' && (row.data as MemoryData).sources.some(id => sources.has(id)));
     const previewed = preview.data.affectedVersions as { id: string; version: number }[] | undefined;
     if (!previewed || visibleAffected.length !== previewed.length || visibleAffected.some(row => !previewed.some(previous => previous.id === row.id && previous.version === row.version))) throw new MemoryError('VERSION_CONFLICT', 'Deletion impact changed; request a new deletion preview');
-    const affected = new Set(this.rows(scope).filter(row => ['memory', 'history'].includes(row.kind) && (row.data as MemoryData).sources.some(id => sources.has(id))).map(row => row.id));
-    const relatedBundles = new Set(this.rows(scope, 'bundle').filter(row => (row.data.sources as string[] | undefined)?.some(id => sources.has(id))).map(row => row.id));
-    const remove = this.rows(scope).filter(row => sources.has(row.id) || affected.has(row.id) ||
+    const allRows = [...this.records.values()];
+    const affected = new Set(allRows.filter(row => ['memory', 'history'].includes(row.kind) && (row.data as MemoryData).sources.some(id => sources.has(id))).map(row => row.id));
+    const relatedBundles = new Set(allRows.filter(row => row.kind === 'bundle' && (row.data.sources as string[] | undefined)?.some(id => sources.has(id))).map(row => row.id));
+    const remove = allRows.filter(row => sources.has(row.id) || affected.has(row.id) ||
       row.kind === 'job' && sources.has(String(row.data.source)) || row.kind === 'vector-job' && affected.has(String(row.data.memoryId)) ||
       row.kind === 'relation' && (affected.has(String(row.data.from)) || (row.data.sources as string[] | undefined)?.some(id => sources.has(id))) ||
       row.kind === 'feedback' && ((row.data.sources as string[] | undefined)?.some(id => sources.has(id)) || relatedBundles.has(String(row.data.bundleId))) ||
-      ['intent', 'preview', 'bundle'].includes(row.kind));
+      relatedBundles.has(row.id) || row.projectId === scope.projectId && ['intent', 'preview', 'bundle'].includes(row.kind));
     const tombstones = new Map<string, StoredRecord>();
     for (const id of sources) {
       const source = this.records.get(id);
-      for (const target of new Set([id, String(source?.data.root ?? id)])) tombstones.set('t:' + target, { id: 't:' + target, kind: 'tombstone', projectId: scope.projectId, version: 1, data: { source: target, deletedAt: this.timestamp() } });
+      for (const target of new Set([id, String(source?.data.root ?? id)])) tombstones.set('t:' + target, { id: 't:' + target, kind: 'tombstone', projectId: source?.projectId ?? scope.projectId, version: 1, data: { source: target, deletedAt: this.timestamp() } });
     }
-    const survivors = new Set(this.rows(scope, 'memory').filter(row => affected.has(row.id)).flatMap(row => (row.data as MemoryData).sources).filter(id => !sources.has(id)));
+    const survivors = new Set(allRows.filter(row => row.kind === 'memory' && affected.has(row.id)).flatMap(row => (row.data as MemoryData).sources).filter(id => !sources.has(id)));
     const requeue: StoredRecord[] = [...survivors].flatMap(id => {
       const source = this.records.get(id); if (source?.kind !== 'event') return [];
       const old = this.records.get('j:' + id);
-      return [{ id: 'j:' + id, kind: 'job', projectId: scope.projectId, version: (old?.version ?? 0) + 1, data: { source: id, sourceVersion: source.version, state: 'queued', attempts: 0, generation: this.generation(scope) + 1 } }];
+      const project = this.records.get(source.projectId);
+      return [{ id: 'j:' + id, kind: 'job', projectId: source.projectId, version: (old?.version ?? 0) + 1, data: { source: id, sourceVersion: source.version, state: 'queued', attempts: 0, generation: Number(project?.data.generation ?? 0) + 1 } }];
     });
     const purgeId = 'purge:' + randomUUID();
     const purge: StoredRecord = { id: purgeId, kind: 'purge', projectId: scope.projectId, version: 1, data: { ids: remove.map(row => row.id), state: 'pending' } };
     // All public authority is revoked in the same commit before physical cleanup starts.
-    await this.publish([this.control(scope), ...tombstones.values(), ...remove.map(row => ({ id: row.id, kind: 'deleted', projectId: row.projectId, version: row.version + 1, data: {} })), ...requeue, purge]);
+    const changedProjects = new Set([scope.projectId, ...remove.map(row => row.projectId), ...requeue.map(row => row.projectId)]);
+    const controls = [...changedProjects].flatMap(projectId => {
+      const project = this.records.get(projectId);
+      return project?.kind === 'project' ? [{ ...project, version: project.version + 1, data: { ...project.data, generation: Number(project.data.generation) + 1 } }] : [];
+    });
+    await this.publish([...controls, ...tombstones.values(), ...remove.map(row => ({ id: row.id, kind: 'deleted', projectId: row.projectId, version: row.version + 1, data: {} })), ...requeue, purge]);
     try {
       const cleanup = await this.store.purge(remove.map(row => row.id));
       for (const row of remove) this.uncache(row.id);
@@ -298,12 +317,12 @@ export class MemoryService {
       return { status: 'blocked_immediately', sources: [...sources], cleanup: { complete: false, error: 'PROCESSING_FAILED', retry: 'Automatic on next startup' } };
     }
   }
-  private dependentSources(scope: Scope, originals: string[]): string[] {
+  private dependentSources(originals: string[]): string[] {
     const sources = new Set(originals);
     let expanded: boolean;
     do {
       expanded = false;
-      for (const event of this.rows(scope, 'event')) if (!sources.has(event.id) && (event.data.dependencies as string[] | undefined)?.some(id => sources.has(id))) { sources.add(event.id); expanded = true; }
+      for (const event of this.records.values()) if (event.kind === 'event' && !sources.has(event.id) && (event.data.dependencies as string[] | undefined)?.some(id => sources.has(id))) { sources.add(event.id); expanded = true; }
     } while (expanded);
     return [...sources];
   }
@@ -368,7 +387,8 @@ export class MemoryService {
             const currentEnvironment = (changed.get(project.id) ?? project).data.environment as Record<string, string>;
             const initial = Object.fromEntries(Object.entries(environment).filter(([key]) => currentEnvironment[key] === undefined));
             if (direct && Object.keys(initial).length) changed.set(project.id, { ...project, version: project.version + 1, data: { ...project.data, environment: { ...currentEnvironment, ...initial } } });
-            const data: MemoryData = { type: candidate.type, text, state, conditions: candidate.conditions, sources, environment,
+            const scope = candidate.scope === 'global' && (candidate.type === 'fact' || candidate.type === 'preference') ? 'global' : 'project';
+            const data: MemoryData = { type: candidate.type, scope, text, state, conditions: candidate.conditions, sources, environment,
               createdAt: old?.createdAt ?? this.timestamp(), updatedAt: this.timestamp(), pinned: old?.pinned ?? false,
               modelVersion: models.status().modelVersion, policyVersion: POLICY_VERSION, ...temporalFields(text, event.taskId), reason: 'Extracted from cited original evidence; no universal success inferred.' };
             if (data.temporary && this.records.get('task:' + digest(source.projectId + event.taskId))?.data.completed) { data.state = 'archived'; data.reason = 'The user already confirmed this task complete'; }
@@ -434,7 +454,7 @@ export class MemoryService {
     }
   }
   private validCandidate(candidate: MemoryCandidate, source: StoredRecord): boolean {
-    if (!['fact', 'preference', 'episode', 'experience'].includes(candidate.type) || !candidate.text || !Array.isArray(candidate.conditions) || !Array.isArray(candidate.sourceIds) || !Array.isArray(candidate.evidence)) return false;
+    if (!['fact', 'preference', 'episode', 'experience'].includes(candidate.type) || !['project', 'global'].includes(candidate.scope) || !candidate.text || !Array.isArray(candidate.conditions) || !Array.isArray(candidate.sourceIds) || !Array.isArray(candidate.evidence)) return false;
     const text = String(source.data.text);
     return candidate.sourceIds.length === 1 && candidate.sourceIds[0] === source.id && candidate.evidence.length > 0 && candidate.evidence.every(e => e.sourceId === source.id && e.quote.length > 0 && text.includes(e.quote)) && candidate.conditions.every(condition => typeof condition === 'string' && text.includes(condition));
   }
@@ -453,7 +473,7 @@ export class MemoryService {
       if (sources.length < 2) continue;
       const id = experienceId(projectId, members.map(row => row.id));
       const existing = this.records.get(id);
-      const data: MemoryData = { ...(episode.data as MemoryData), type: 'experience', state: 'candidate', sources, memberIds: members.map(row => row.id), pinned: Boolean(existing?.data.pinned),
+      const data: MemoryData = { ...(episode.data as MemoryData), type: 'experience', scope: 'project', state: 'candidate', sources, memberIds: members.map(row => row.id), pinned: Boolean(existing?.data.pinned),
         text: [...new Set(members.map(row => String(row.data.text)))].join('\n'),
         createdAt: String(existing?.data.createdAt ?? this.timestamp()), updatedAt: this.timestamp(), modelVersion: 'source-consolidation-1',
         reason: 'Similar original episodes grouped with identical conditions, versions and negation; no universal rule inferred.' };
@@ -501,11 +521,18 @@ export class MemoryService {
     return this.exclusive(async () => {
       if (generation !== this.generation(scope) || this.project(scope).data.paused) return empty('CONTROL_CHANGED');
       if (queryVector) {
-        try { vectorRows = (await this.store.searchVector(scope.projectId, queryVector, 20)).filter(row => row.data.embeddingVersion === this.options.models?.status().modelVersion); }
+        try {
+          const embeddingVersion = this.options.models?.status().modelVersion;
+          const local = (await this.store.searchVector(scope.projectId, queryVector, 20)).filter(row => row.data.embeddingVersion === embeddingVersion);
+          const global = this.visibleMemories(scope).filter(row => row.projectId !== scope.projectId && row.vector && row.data.embeddingVersion === embeddingVersion)
+            .map(row => ({ row, score: row.vector!.reduce((sum, value, index) => sum + value * (queryVector![index] ?? 0), 0) }))
+            .sort((left, right) => right.score - left.score).slice(0, 20).map(item => item.row);
+          vectorRows = [...new Map([...local, ...global].map(row => [row.id, row])).values()];
+        }
         catch { degradation = 'TEXT_FALLBACK'; }
       }
       const environment = this.project(scope).data.environment as Record<string, string>;
-      const eligible = this.rows(scope, 'memory').filter(row => {
+      const eligible = this.visibleMemories(scope).filter(row => {
         const data = row.data as MemoryData;
         const state = effectiveState(data, this.now(), environment);
         return (state === 'active' || scope.includeCandidates && state === 'candidate' || mode === 'history' && ['archived', 'review', 'superseded'].includes(state)) && data.sources.every(id => this.records.get(id)?.kind === 'event');
@@ -517,7 +544,8 @@ export class MemoryService {
       const exactCodes = query.match(/\b[A-Z][A-Z0-9_]*[0-9_][A-Za-z0-9_.:-]*\b/g) ?? [];
       const priority = (row: StoredRecord): number => {
         const exact = exactCodes.some(code => String(row.data.text).includes(code)) ? 1 : 0;
-        return exact + scores.get(row.id)! * (mode === 'history' ? 1 : ageWeight(row.data as MemoryData, this.now()));
+        const projectPriority = row.projectId === scope.projectId ? 0.05 : 0;
+        return exact + projectPriority + scores.get(row.id)! * (mode === 'history' ? 1 : ageWeight(row.data as MemoryData, this.now()));
       };
       const ranked = eligible.filter(row => scores.has(row.id)).sort((a, b) => priority(b) - priority(a));
       const memories: RecallMemory[] = [];
@@ -527,10 +555,11 @@ export class MemoryService {
         if (memories.length >= 6) break;
         const data = row.data as MemoryData;
         const state = effectiveState(data, this.now(), environment);
-        const line = `[${row.id.slice(0, 12)} v${row.version}; ${state}; ${data.updatedAt.slice(0, 10)}; src ${data.sources.map(id => id.slice(0, 10)).join(',')}] ${data.text}${data.conditions.length ? ' Conditions: ' + data.conditions.join('; ') : ''}\n`;
+        const visibility = memoryScope(data);
+        const line = `[${row.id.slice(0, 12)} v${row.version}; ${state}; ${visibility}; ${data.updatedAt.slice(0, 10)}; src ${data.sources.map(id => id.slice(0, 10)).join(',')}] ${data.text}${data.conditions.length ? ' Conditions: ' + data.conditions.join('; ') : ''}\n`;
         if (tokenCount(body + line) > 800) continue;
         body += line;
-        memories.push({ id: row.id, version: row.version, type: data.type, text: data.text, state, sources: [...data.sources], conditions: [...data.conditions], updatedAt: data.updatedAt, score: scores.get(row.id)! });
+        memories.push({ id: row.id, version: row.version, projectId: row.projectId, scope: visibility, type: data.type, text: data.text, state, sources: [...data.sources], conditions: [...data.conditions], updatedAt: data.updatedAt, score: scores.get(row.id)! });
       }
       if (!memories.length) return empty(degradation);
       const bundle: ContextBundle = { id: 'b:' + randomUUID(), projectId: scope.projectId, generation, memories, text: body, tokens: tokenCount(body), degradation, delivered: false, mode };
@@ -554,6 +583,89 @@ export class MemoryService {
       const stored = this.records.get(bundle.id);
       if (stored) await this.publish([{ ...stored, data: { ...stored.data, delivered: true } }]);
       return { ...bundle, delivered: true };
+    });
+  }
+  async dashboard(): Promise<Record<string, unknown>> {
+    return this.exclusive(async () => {
+      const now = this.now();
+      const projects = [...this.records.values()].filter(row => row.kind === 'project');
+      const memories = [...this.records.values()].filter(row => row.kind === 'memory');
+      const relations = [...this.records.values()].filter(row => row.kind === 'relation' && row.data.valid !== false);
+      const histories = [...this.records.values()].filter(row => row.kind === 'history');
+      const childrenByMember = new Map<string, string[]>();
+      for (const memory of memories) for (const member of Array.isArray(memory.data.memberIds) ? memory.data.memberIds : []) {
+        if (typeof member !== 'string') continue;
+        childrenByMember.set(member, [...(childrenByMember.get(member) ?? []), memory.id]);
+      }
+      const relationsByMemory = new Map<string, StoredRecord[]>();
+      for (const relation of relations) for (const id of new Set([relation.data.from, relation.data.to])) {
+        if (typeof id !== 'string') continue;
+        relationsByMemory.set(id, [...(relationsByMemory.get(id) ?? []), relation]);
+      }
+      const historiesByMemory = new Map<string, StoredRecord[]>();
+      for (const history of histories) {
+        const id = history.data.memoryId;
+        if (typeof id === 'string') historiesByMemory.set(id, [...(historiesByMemory.get(id) ?? []), history]);
+      }
+      const projectNames = new Map(projects.map(project => {
+        const workspace = typeof project.data.workspace === 'string' ? project.data.workspace : '';
+        return [project.id, workspace ? basename(workspace) || workspace : `session ${project.id.slice(2, 10)}`];
+      }));
+      const memoryRows = memories.map(row => {
+        const data = row.data as MemoryData;
+        const project = this.records.get(row.projectId);
+        const environment = (project?.data.environment as Record<string, string> | undefined) ?? {};
+        const state = effectiveState(data, now, environment);
+        const anchor = Date.parse(data.lastReusedAt ?? data.updatedAt);
+        const ageDays = Number.isFinite(anchor) ? Math.max(0, now - anchor) / 86400_000 : 0;
+        const halfLifeDays = data.pinned || data.type === 'fact' || data.type === 'preference' ? null : data.type === 'episode' ? 30 : 90;
+        let decayReason = 'none';
+        if (data.expiresAt && Date.parse(data.expiresAt) <= now) decayReason = 'expired';
+        else if (Object.entries(data.environment).some(([key, value]) => !versionMatches(value, environment[key]))) decayReason = 'environment_mismatch';
+        else if (data.temporary && ageDays > 7) decayReason = 'temporary_stale';
+        else if (data.type === 'episode' && !data.pinned && ageDays > 180) decayReason = 'episode_stale';
+        const memberIds = Array.isArray(data.memberIds) ? data.memberIds.filter((id): id is string => typeof id === 'string') : [];
+        const children = childrenByMember.get(row.id) ?? [];
+        const sourceRows = data.sources.map(id => this.records.get(id)).filter((source): source is StoredRecord => source?.kind === 'event').map(source => ({
+          id: source.id, projectId: source.projectId, role: source.data.role, taskId: source.data.taskId, sessionId: source.data.sessionId,
+          occurredAt: source.data.occurredAt, text: String(source.data.text).slice(0, 4000),
+        }));
+        return {
+          id: row.id, version: row.version, projectId: row.projectId, projectName: projectNames.get(row.projectId) ?? row.projectId.slice(0, 12),
+          scope: memoryScope(data), type: data.type, state: data.state, effectiveState: state, text: data.text, conditions: data.conditions,
+          pinned: data.pinned, createdAt: data.createdAt, updatedAt: data.updatedAt, lastReusedAt: data.lastReusedAt, expiresAt: data.expiresAt,
+          reason: data.reason, modelVersion: data.modelVersion, policyVersion: data.policyVersion, environment: data.environment,
+          decay: { weight: Number(ageWeight(data, now).toFixed(4)), ageDays: Number(ageDays.toFixed(1)), halfLifeDays, reason: decayReason },
+          sources: sourceRows, lineage: {
+            memberIds, children,
+            relations: (relationsByMemory.get(row.id) ?? []).map(relation => ({ id: relation.id, type: relation.data.type, from: relation.data.from, to: relation.data.to })),
+            history: (historiesByMemory.get(row.id) ?? []).sort((left, right) => right.version - left.version).map(history => ({ version: history.version, state: history.data.state, reason: history.data.reason, updatedAt: history.data.updatedAt })),
+          },
+        };
+      }).sort((left, right) => String(right.updatedAt).localeCompare(String(left.updatedAt)));
+      const projectRows = projects.map(project => {
+        const owned = memoryRows.filter(memory => memory.projectId === project.id);
+        return {
+          id: project.id, name: projectNames.get(project.id), workspace: project.data.workspace ?? null, paused: Boolean(project.data.paused),
+          environment: project.data.environment ?? {}, counts: {
+            memories: owned.length,
+            active: owned.filter(memory => memory.effectiveState === 'active').length,
+            candidates: owned.filter(memory => memory.effectiveState === 'candidate').length,
+            global: owned.filter(memory => memory.scope === 'global').length,
+          },
+        };
+      }).sort((left, right) => String(left.name).localeCompare(String(right.name)));
+      return {
+        generatedAt: new Date(now).toISOString(), model: this.options.models?.status() ?? { phase: 'degraded' },
+        totals: {
+          projects: projectRows.length, memories: memoryRows.length,
+          active: memoryRows.filter(memory => memory.effectiveState === 'active').length,
+          candidates: memoryRows.filter(memory => memory.effectiveState === 'candidate').length,
+          global: memoryRows.filter(memory => memory.scope === 'global').length,
+          derived: memoryRows.filter(memory => memory.type === 'experience').length,
+        },
+        projects: projectRows, memories: memoryRows,
+      };
     });
   }
   async close(): Promise<void> { await this.processing; await this.serial; if (this.closed) return; this.closed = true; await this.store.close(); }

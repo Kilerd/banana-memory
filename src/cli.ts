@@ -8,7 +8,8 @@ const command = process.argv[2];
 function printHttpConnection(instance: { url: string; token: string }, alreadyRunning: boolean): void {
   const status = alreadyRunning ? 'Banana Memory is already running.' : 'Banana Memory is running in the foreground.';
   const stop = alreadyRunning ? '' : '\nPress Ctrl+C to stop.\n';
-  process.stdout.write(`${status}\nMCP: ${instance.url}\nData: ${dataDirectory()}\n\nAdd it to Claude Code once:\nclaude mcp add --transport http --scope user --header "Authorization: Bearer ${instance.token}" -- banana-memory ${instance.url}\n${stop}`);
+  const ui = instance.url.replace(/\/mcp$/, '/') + `#token=${instance.token}`;
+  process.stdout.write(`${status}\nUI:  ${ui}\nMCP: ${instance.url}\nData: ${dataDirectory()}\n\nAdd it to Claude Code once:\nclaude mcp add --transport http --scope user --header "Authorization: Bearer ${instance.token}" -- banana-memory ${instance.url}\n${stop}`);
 }
 
 try {

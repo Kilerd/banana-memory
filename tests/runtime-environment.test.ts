@@ -14,7 +14,7 @@ test('a canonical python3 version hook excludes Python 3.12 memories after a 3.1
     prepare: async () => {}, shutdown: async () => {},
     embed: async () => { throw new Error('fixture: lexical retrieval only'); },
     extract: async events => events.map(event => ({
-      type: 'fact', text: event.text, sourceIds: [event.id],
+      type: 'fact', scope: 'project', text: event.text, sourceIds: [event.id],
       conditions: event.text.includes('python3=3.12') ? ['python3=3.12'] : [],
       confidence: 1, evidence: [{ sourceId: event.id, quote: event.text }]
     }))

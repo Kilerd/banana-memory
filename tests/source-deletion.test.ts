@@ -20,7 +20,7 @@ function blockedExtraction() {
       calls++;
       started();
       await barrier;
-      return events.map(event => ({ type: 'fact', text: event.text, sourceIds: [event.id], conditions: [], confidence: 1, evidence: [{ sourceId: event.id, quote: event.text }] }));
+      return events.map(event => ({ type: 'fact', scope: 'project', text: event.text, sourceIds: [event.id], conditions: [], confidence: 1, evidence: [{ sourceId: event.id, quote: event.text }] }));
     },
   };
   return { models, entered, release, calls: () => calls };

@@ -71,7 +71,7 @@ async function localFixture(t: { after: (fn: () => Promise<unknown>) => void }, 
   await writeFile(path.join(directory, 'server.mjs'), fakeServer, { mode: 0o700 });
   const manifest: ModelManifest = { version: 'fixture', platform: process.platform, arch: process.arch, resources: [{ ...res, id: 'generation' }, res, { ...res, id: 'runtime' }], runtimeExecutable: 'server.mjs', generation: { inputTokens: 4096, outputTokens: 768, contextTokens: 5120 }, embedding: { dimensions: 1024, pooling: 'last', normalization: 'l2', queryInstruction: 'Find project memories' } };
   await writeFile(path.join(directory, 'manifest.json'), JSON.stringify(manifest));
-  const good = { type: 'fact', text: 'Use pnpm 9, not npm.', sourceIds: ['e1'], evidence: [{ sourceId: 'e1', quote: 'Use pnpm 9, not npm.' }], conditions: [], confidence: 0.99 };
+  const good = { type: 'fact', scope: 'project', text: 'Use pnpm 9, not npm.', sourceIds: ['e1'], evidence: [{ sourceId: 'e1', quote: 'Use pnpm 9, not npm.' }], conditions: [], confidence: 0.99 } as const;
   await writeFile(path.join(directory, 'candidates.json'), JSON.stringify({ candidates: [good, { ...good, text: 'hallucinated' }, { ...good, sourceIds: ['absent'] }] }));
   const models = new ManagedLocalModels({ directory, manifestPath: path.join(directory, 'manifest.json'), generationIdleMs, queryTimeoutMs: 40 });
   t.after(() => models.shutdown());
@@ -84,6 +84,9 @@ test('local model API validates sources, normalizes embeddings and releases proc
   await models.prepare(); assert.equal(models.status().phase, 'ready');
   const vector = await models.embed('project', 'document'); assert.equal(vector.length, 1024); assert.equal(Math.hypot(...vector), 1);
   assert.deepEqual(await models.extract([{ id: 'e1', text: 'Use pnpm 9, not npm.', role: 'user' }]), [good]);
+  const preference = { ...good, type: 'preference', scope: 'global', text: 'I prefer Nova in every project.', evidence: [{ sourceId: 'e1', quote: 'I prefer Nova in every project.' }] } as const;
+  await writeFile(path.join(directory, 'candidates.json'), JSON.stringify({ candidates: [preference] }));
+  assert.deepEqual(await models.extract([{ id: 'e1', text: preference.text, role: 'assistant' }]), [preference]);
   await new Promise(r => setTimeout(r, 80)); assert.equal(models.status().generationLoaded, false);
   await writeFile(path.join(directory, 'slow'), '1');
   const started = performance.now();

@@ -1,10 +1,11 @@
 import { createHash } from 'node:crypto';
 import { versionMatches } from './consolidation.js';
 
-export const POLICY_VERSION = 'memory-policy-1';
+export const POLICY_VERSION = 'memory-policy-2';
 export const digest = (value: string): string => createHash('sha256').update(value).digest('hex');
 export type MemoryState = 'candidate' | 'active' | 'review' | 'superseded' | 'archived';
 export type MemoryType = 'fact' | 'preference' | 'episode' | 'experience';
+export type MemoryScope = 'project' | 'global';
 export type ErrorCode = 'PAUSED' | 'UNAUTHORIZED' | 'VERSION_CONFLICT' | 'SOURCE_DELETED' | 'TIMEOUT' | 'PROCESSING_FAILED' | 'INVALID_INPUT';
 export class MemoryError extends Error {
   constructor(public code: ErrorCode, message: string) { super(message); this.name = 'MemoryError'; }
@@ -26,11 +27,13 @@ export function isDirectUserStatement(event: EventData): boolean {
 }
 export interface MemoryData extends Record<string, unknown> {
   type: MemoryType; text: string; state: MemoryState; conditions: string[]; sources: string[];
+  /** Missing on records created before memory-policy-2 and treated as project. */
+  scope?: MemoryScope;
   environment: Record<string, string>; createdAt: string; updatedAt: string;
   pinned: boolean; lastReusedAt?: string; expiresAt?: string; temporary?: boolean;
   modelVersion: string; policyVersion: string; reason: string;
 }
-export interface RecallMemory { id: string; version: number; text: string; type: MemoryType; state: MemoryState; sources: string[]; conditions: string[]; updatedAt: string; score: number }
+export interface RecallMemory { id: string; version: number; projectId: string; scope: MemoryScope; text: string; type: MemoryType; state: MemoryState; sources: string[]; conditions: string[]; updatedAt: string; score: number }
 export interface ContextBundle { id: string; projectId: string; generation: number; memories: RecallMemory[]; text: string; tokens: number; degradation?: string; delivered: boolean; mode?: 'current' | 'history' }
 
 // UTF-8 byte count is a fixed, conservative upper bound for byte-fallback tokenizers.
@@ -53,8 +56,11 @@ export function effectiveState(memory: MemoryData, now: number, environment: Rec
 }
 export function ageWeight(memory: MemoryData, now: number): number {
   if (memory.pinned || memory.type === 'fact' || memory.type === 'preference') return 1;
-  const days = Math.max(0, now - Date.parse(memory.updatedAt)) / 86400_000;
+  const days = Math.max(0, now - Date.parse(memory.lastReusedAt ?? memory.updatedAt)) / 86400_000;
   return Math.pow(0.5, days / (memory.type === 'episode' ? 30 : 90));
+}
+export function memoryScope(memory: MemoryData): MemoryScope {
+  return memory.scope === 'global' ? 'global' : 'project';
 }
 
 /** Recognize a narrow, explicit outcome declaration, never a keyword mention.

@@ -14,6 +14,7 @@ import { privateDirectory, runtimeDirectory } from './ipc.js';
 import type { BackendFactory, MemoryTool, ServerBackend } from './contracts.js';
 import { safeErrorCode } from './errors.js';
 import { releaseMetadata } from './version.js';
+import { dashboardHtml } from '../dashboard.js';
 
 export const DEFAULT_HTTP_PORT = 3927;
 const MAX_BODY_BYTES = 1_000_000;
@@ -112,7 +113,16 @@ function trustedRequest(req: IncomingMessage): boolean {
 
 function json(res: ServerResponse, status: number, body: unknown): void {
   const text = JSON.stringify(body);
-  res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'content-length': Buffer.byteLength(text) });
+  res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'content-length': Buffer.byteLength(text), 'cache-control': 'no-store' });
+  res.end(text);
+}
+
+function html(res: ServerResponse, text: string): void {
+  res.writeHead(200, {
+    'content-type': 'text/html; charset=utf-8', 'content-length': Buffer.byteLength(text), 'cache-control': 'no-store',
+    'content-security-policy': "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+    'referrer-policy': 'no-referrer', 'x-content-type-options': 'nosniff', 'x-frame-options': 'DENY',
+  });
   res.end(text);
 }
 
@@ -217,6 +227,12 @@ export async function startHttpServer(options: HttpServerOptions): Promise<Runni
       if (!trustedRequest(req)) { json(res, 403, { error: 'forbidden_origin' }); return; }
       const path = new URL(req.url ?? '/', `http://${header(req, 'host')}`).pathname;
       if (path === '/health' && req.method === 'GET') { json(res, 200, { status: closing ? 'stopping' : 'ok' }); return; }
+      if ((path === '/' || path === '/ui') && req.method === 'GET') { html(res, dashboardHtml); return; }
+      if (path === '/api/dashboard' && req.method === 'GET') {
+        if (!authorized(req, token)) { res.setHeader('www-authenticate', 'Bearer'); json(res, 401, { error: 'unauthorized' }); return; }
+        if (!backend.dashboard) { json(res, 501, { error: 'dashboard_unavailable' }); return; }
+        json(res, 200, await backend.dashboard()); return;
+      }
       if (path !== '/mcp') { json(res, 404, { error: 'not_found' }); return; }
       if (!authorized(req, token)) { res.setHeader('www-authenticate', 'Bearer'); json(res, 401, { error: 'unauthorized' }); return; }
       const sessionId = header(req, 'mcp-session-id');

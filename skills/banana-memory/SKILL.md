@@ -11,7 +11,7 @@ At the beginning of substantive work, call `recall` with the user's current goal
 
 Record only information likely to help a later task:
 
-- direct user preferences and durable project decisions;
+- direct user preferences and durable project decisions; preserve explicit user-wide or cross-project wording, and never generalize a project statement into a global rule;
 - project facts verified from the current workspace;
 - concrete outcomes, including the relevant conditions and failure evidence.
 

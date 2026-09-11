@@ -31,7 +31,7 @@ test('three negated outcomes across two sessions do not promote experience; expl
     status: () => ({ phase: 'ready', generationLoaded: false, embeddingLoaded: false, modelVersion: 'outcome-fixture' }),
     prepare: async () => {}, shutdown: async () => {},
     embed: async () => { throw new Error('controlled text fallback'); },
-    extract: async events => events.filter(event => event.text.includes(episode)).map(event => ({ type: 'episode', text: episode, sourceIds: [event.id], conditions: ['node=22', '离线时除外', '不得删除生产数据'], confidence: 1, evidence: [{ sourceId: event.id, quote: episode }] })),
+    extract: async events => events.filter(event => event.text.includes(episode)).map(event => ({ type: 'episode', scope: 'project', text: episode, sourceIds: [event.id], conditions: ['node=22', '离线时除外', '不得删除生产数据'], confidence: 1, evidence: [{ sourceId: event.id, quote: episode }] })),
   };
   const service = await MemoryService.open(directory, { models, now: () => Date.parse('2026-09-10T00:00:00Z') });
   try {

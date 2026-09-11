@@ -11,7 +11,7 @@ function fixtureModels(extract?: (events: ModelEvent[]) => Promise<MemoryCandida
     status: () => ({ phase: 'ready', generationLoaded: true, embeddingLoaded: true, modelVersion: 'replay-fixture-1' }),
     prepare: async () => {}, shutdown: async () => {},
     embed: async () => { throw new Error('fixture: text fallback'); },
-    extract: extract ?? (async events => events.map(event => ({ type: 'fact', text: event.text, sourceIds: [event.id], conditions: [], confidence: 1, evidence: [{ sourceId: event.id, quote: event.text }] })))
+    extract: extract ?? (async events => events.map(event => ({ type: 'fact', scope: 'project', text: event.text, sourceIds: [event.id], conditions: [], confidence: 1, evidence: [{ sourceId: event.id, quote: event.text }] })))
   };
 }
 
@@ -83,7 +83,7 @@ test('deletion follows derived MCP records and captured assistant echoes back to
 test('conditional episodes require three independent verified tasks across two sessions before promotion, and counterexamples withdraw them', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'banana-experience-'));
   const episode = 'node=22 时重建索引可恢复 ERR_CACHE；离线时除外。';
-  const service = await MemoryService.open(dir, { models: fixtureModels(async events => events.map(event => ({ type: 'episode', text: episode, sourceIds: [event.id], conditions: ['node=22', '离线时除外'], confidence: 1, evidence: [{ sourceId: event.id, quote: episode }] }))) });
+  const service = await MemoryService.open(dir, { models: fixtureModels(async events => events.map(event => ({ type: 'episode', scope: 'project', text: episode, sourceIds: [event.id], conditions: ['node=22', '离线时除外'], confidence: 1, evidence: [{ sourceId: event.id, quote: episode }] }))) });
   try {
     const a = await service.bind({ workspace: '/workspace/app', sessionId: 'one', origin: 'hook' });
     const b = await service.bind({ workspace: '/workspace/app', sessionId: 'two', origin: 'hook' });
@@ -99,6 +99,10 @@ test('conditional episodes require three independent verified tasks across two s
     assert.ok(experience);
     assert.equal(experience.sources.length, 3);
     assert.match(experience.text, /离线时除外/);
+    const dashboard = await service.dashboard() as any;
+    const derived = dashboard.memories.find((memory: any) => memory.id === experience.id);
+    assert.equal(derived.lineage.memberIds.length, 1);
+    assert.equal(derived.sources.length, 3);
     const failed = await service.record(b, { id: 'counterexample', text: `验证失败，反例：${episode}`, role: 'user', taskId: 'counterexample' });
     await service.feedback(b, { taskId: 'counterexample', text: 'failure', sourceIds: [failed.id] });
     assert.equal((await service.recall(a, 'ERR_CACHE')).memories.filter(memory => memory.type === 'experience').length, 0);
@@ -153,7 +157,7 @@ test('pause during extraction discards in-flight publication and never collects 
 test('time aging, pinning and relevant environment invalidation have independent semantics', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'banana-aging-'));
   let now = Date.parse('2026-01-01T00:00:00Z');
-  const service = await MemoryService.open(dir, { now: () => now, models: fixtureModels(async events => events.map(event => ({ type: 'episode', text: event.text, sourceIds: [event.id], conditions: ['node=22'], confidence: 1, evidence: [{ sourceId: event.id, quote: event.text }] }))) });
+  const service = await MemoryService.open(dir, { now: () => now, models: fixtureModels(async events => events.map(event => ({ type: 'episode', scope: 'project', text: event.text, sourceIds: [event.id], conditions: ['node=22'], confidence: 1, evidence: [{ sourceId: event.id, quote: event.text }] }))) });
   try {
     const scope = await service.bind({ workspace: '/workspace/app', sessionId: 'one', origin: 'hook' });
     await service.updateEnvironment(scope, { node: '22' });
@@ -242,5 +246,46 @@ test('HTTP Skill mode retrieves model-mediated observations as labelled candidat
     assert.equal(recalled.memories.length, 1);
     assert.equal(recalled.memories[0]?.state, 'candidate');
     assert.match(recalled.text, /candidate/);
+  } finally { await service.close(); await rm(dir, { recursive: true, force: true }); }
+});
+
+test('explicit global facts cross project boundaries while project memories remain isolated and visible in the dashboard', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'banana-global-scope-'));
+  const service = await MemoryService.open(dir, { models: fixtureModels(async events => events.map(event => ({
+    type: 'fact', scope: event.text.includes('所有项目') ? 'global' : 'project', text: event.text,
+    sourceIds: [event.id], conditions: [], confidence: 1, evidence: [{ sourceId: event.id, quote: event.text }],
+  }))) });
+  try {
+    const alpha = await service.bind({ workspace: '/workspace/alpha', sessionId: 'alpha', origin: 'hook' });
+    const beta = await service.bind({ workspace: '/workspace/beta', sessionId: 'beta', origin: 'hook' });
+    await service.record(alpha, { id: 'global-editor', text: '所有项目都使用 EDITOR_NOVA。', role: 'user' });
+    await service.record(alpha, { id: 'local-port', text: '当前项目使用 LOCAL_PORT_7443。', role: 'user' });
+    await service.processPending();
+
+    const crossProject = await service.recall(beta, 'EDITOR_NOVA');
+    assert.equal(crossProject.memories.length, 1);
+    assert.equal(crossProject.memories[0]?.scope, 'global');
+    assert.equal(crossProject.memories[0]?.projectId, alpha.projectId);
+    assert.equal((await service.inspect(beta, crossProject.memories[0]!.id)).scope, 'global');
+    assert.equal((await service.recall(beta, 'LOCAL_PORT_7443')).memories.length, 0);
+
+    await service.deliver(beta, crossProject);
+    await service.record(beta, { id: 'derived', text: '基于共享设置启用 DERIVED_NOTE。', role: 'user', sourceIds: crossProject.memories[0]!.sources });
+    await service.processPending();
+    assert.equal((await service.recall(beta, 'DERIVED_NOTE')).memories.length, 1);
+
+    const snapshot = await service.dashboard() as any;
+    assert.equal(snapshot.totals.projects, 2);
+    assert.equal(snapshot.totals.global, 1);
+    const global = snapshot.memories.find((memory: any) => memory.scope === 'global');
+    assert.equal(global.projectName, 'alpha');
+    assert.equal(global.sources.length, 1);
+    assert.equal(global.decay.weight, 1);
+    assert.ok(Array.isArray(global.lineage.relations));
+
+    const preview = await service.manage(alpha, (await service.issueIntent(alpha, { action: 'delete-preview', target: crossProject.memories[0]!.id, expectedVersion: crossProject.memories[0]!.version })).intentToken);
+    assert.equal(preview.affectedMemories.length, 2);
+    await service.manage(alpha, (await service.issueIntent(alpha, { action: 'delete', previewId: preview.previewId })).intentToken);
+    assert.equal((await service.recall(beta, 'DERIVED_NOTE')).memories.length, 0);
   } finally { await service.close(); await rm(dir, { recursive: true, force: true }); }
 });

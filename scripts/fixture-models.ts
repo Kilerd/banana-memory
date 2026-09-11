@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import type { LocalModels, MemoryCandidate, ModelEvent, ModelStatus } from '../src/models/types.js';
 
-export interface FixtureExtraction { text: string; type: MemoryCandidate['type']; conditions: string[] }
+export interface FixtureExtraction { text: string; type: MemoryCandidate['type']; scope?: MemoryCandidate['scope']; conditions: string[] }
 
 /** A replay double, never selected by the application or installer. It has no
  * access to query expectations, memory ids or correctness labels. */
@@ -14,7 +14,7 @@ export class FixtureModels implements LocalModels {
   async prepare(): Promise<void> {}
   async extract(events: ModelEvent[]): Promise<MemoryCandidate[]> {
     return events.flatMap(event => this.extractions.filter(candidate => candidate.text === event.text).map(candidate => ({
-      type: candidate.type, text: candidate.text, conditions: candidate.conditions,
+      type: candidate.type, scope: candidate.scope ?? 'project', text: candidate.text, conditions: candidate.conditions,
       sourceIds: [event.id], evidence: [{ sourceId: event.id, quote: event.text }], confidence: 0.99,
     })));
   }

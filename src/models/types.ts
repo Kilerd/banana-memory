@@ -13,6 +13,7 @@ export interface ModelEvent {
 
 export interface MemoryCandidate {
   type: 'fact' | 'preference' | 'episode' | 'experience';
+  scope: 'project' | 'global';
   text: string;
   sourceIds: string[];
   conditions: string[];

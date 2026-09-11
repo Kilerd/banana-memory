@@ -22,6 +22,7 @@ export async function createBackend(dataDirectory: string): Promise<ServerBacken
   worker.unref();
   let closing = false;
   const backend: ServerBackend = {
+    dashboard: () => service.dashboard(),
     async retryModels() { await models.retry(); await service.retryFailedWork(); void service.processPending().catch(() => {}); return models.status(); },
     bind: identity => service.bind(identity),
     async handleHook(context, event, intent) {

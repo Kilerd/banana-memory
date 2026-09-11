@@ -29,6 +29,7 @@ test('foreground HTTP MCP authenticates requests and binds tools to the client r
     async bind(identity) { identities.push(identity); return identity; },
     async handleHook() { throw new Error('unexpected_hook'); },
     async call(context, tool, args) { calls.push({ context, tool, args }); return { tool, args }; },
+    async dashboard() { return { totals: { memories: 2 }, memories: [{ id: 'memory-one' }] }; },
     async retryModels() { return { phase: 'ready' }; },
     async close() {},
   };
@@ -36,6 +37,12 @@ test('foreground HTTP MCP authenticates requests and binds tools to the client r
   t.after(() => server.close());
 
   assert.deepEqual(await fetch(server.url.replace('/mcp', '/health')).then(response => response.json()), { status: 'ok' });
+  const page = await fetch(server.url.replace('/mcp', '/'));
+  assert.equal(page.status, 200);
+  assert.match(page.headers.get('content-security-policy') ?? '', /frame-ancestors 'none'/);
+  assert.match(await page.text(), /记忆如何留下/);
+  assert.equal((await fetch(server.url.replace('/mcp', '/api/dashboard'))).status, 401);
+  assert.deepEqual(await fetch(server.url.replace('/mcp', '/api/dashboard'), { headers: { authorization: 'Bearer test-secret' } }).then(response => response.json()), { totals: { memories: 2 }, memories: [{ id: 'memory-one' }] });
   assert.equal((await fetch(server.url, { method: 'POST' })).status, 401);
   assert.equal((await fetch(server.url, {
     method: 'POST', headers: { authorization: 'Bearer test-secret', origin: 'https://attacker.example', 'content-type': 'application/json' },
@@ -76,6 +83,7 @@ test('a repeated start reports the healthy foreground server and exits successfu
 
   assert.equal(stderr, '');
   assert.match(stdout, /^Banana Memory is already running\./);
+  assert.match(stdout, new RegExp(`UI:  http://127\\.0\\.0\\.1:${server.port}/#token=[a-f0-9]{64}`));
   assert.match(stdout, new RegExp(`MCP: http://127\\.0\\.0\\.1:${server.port}/mcp`));
   assert.match(stdout, /claude mcp add --transport http --scope user/);
 });

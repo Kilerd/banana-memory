@@ -4,6 +4,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { MemoryService } from '../src/service.js';
+import { UnifiedStore } from '../src/store.js';
 import type { LocalModels, ModelEvent, MemoryCandidate } from '../src/models/types.js';
 
 function fixtureModels(extract?: (events: ModelEvent[]) => Promise<MemoryCandidate[]>): LocalModels {
@@ -23,6 +24,34 @@ function versionedModels(modelVersion: string, embeddingVersion: string, compati
     embed: async () => [1, ...Array(1023).fill(0)],
   };
 }
+
+test('read-only sessions create no project while first record names and persists a shared workspace', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'banana-lazy-project-'));
+  const legacy = await UnifiedStore.open(join(dir, 'memory.lance'));
+  await legacy.commit([{ id: 's:legacy-empty', kind: 'project', projectId: 's:legacy-empty', version: 1, data: { workspace: null, paused: false, generation: 0, environment: {} } }]);
+  await legacy.close();
+  const service = await MemoryService.open(dir, { models: fixtureModels() });
+  try {
+    const first = await service.bind({ workspace: '/workspace/shared-project', sessionId: 'first-http-session', origin: 'mcp', includeCandidates: true });
+    assert.equal((await service.inspect(first)).events, 0);
+    assert.equal((await service.recall(first, 'PROJECT_MEMORY_7443')).memories.length, 0);
+    assert.equal((await service.dashboard() as any).totals.projects, 0);
+
+    await service.record(first, { id: 'project-fact', text: '项目使用 PROJECT_MEMORY_7443。', projectName: '共享项目', role: 'assistant' });
+    let snapshot = await service.dashboard() as any;
+    assert.equal(snapshot.totals.projects, 1);
+    assert.equal(snapshot.projects[0]?.name, '共享项目');
+    assert.equal(snapshot.projects[0]?.workspace, '/workspace/shared-project');
+    await service.processPending();
+
+    const second = await service.bind({ workspace: '/workspace/shared-project', sessionId: 'second-http-session', origin: 'mcp', includeCandidates: true });
+    assert.equal(second.projectId, first.projectId);
+    assert.equal((await service.recall(second, 'PROJECT_MEMORY_7443')).memories.length, 1);
+    await service.record(second, { id: 'rename', text: '项目名称改为“团队控制面”。', projectName: '团队控制面', role: 'assistant' });
+    snapshot = await service.dashboard() as any;
+    assert.equal(snapshot.projects[0]?.name, '团队控制面');
+  } finally { await service.close(); await rm(dir, { recursive: true, force: true }); }
+});
 
 test('a generation-model upgrade reuses vectors from a compatible embedding identity', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'banana-embedding-version-'));

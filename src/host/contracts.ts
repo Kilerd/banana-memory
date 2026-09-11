@@ -4,6 +4,8 @@ export interface HostIdentity {
   sessionId: string;
   origin: 'hook' | 'mcp';
   scopeReason?: string;
+  /** Host-suggested display label. The agent may replace it when recording. */
+  projectName?: string;
   /** HTTP + Skill mode has no trusted host hooks, so it may retrieve clearly
    * labelled candidate memories without granting them user authority. */
   includeCandidates?: boolean;

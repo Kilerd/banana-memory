@@ -10,11 +10,19 @@ export type ErrorCode = 'PAUSED' | 'UNAUTHORIZED' | 'VERSION_CONFLICT' | 'SOURCE
 export class MemoryError extends Error {
   constructor(public code: ErrorCode, message: string) { super(message); this.name = 'MemoryError'; }
 }
-export interface Scope { projectId: string; sessionId: string; origin: 'hook' | 'mcp'; reason?: string; includeCandidates?: boolean }
+export interface Scope {
+  projectId: string; sessionId: string; origin: 'hook' | 'mcp'; reason?: string; includeCandidates?: boolean;
+  /** Trusted host identity used to create project metadata lazily. */
+  workspace?: string | null;
+  /** A display-only label. It never participates in scope authorization. */
+  projectName?: string;
+}
 export interface EventInput {
   id: string; text: string; role?: 'user' | 'assistant' | 'tool' | 'system';
   taskId?: string; sourceRoot?: string; occurredAt?: string; truncated?: boolean;
   filtered?: boolean; filterReasons?: string[]; kind?: string; outcome?: string; sourceIds?: string[];
+  /** Agent-supplied display label; never used as a project identity. */
+  projectName?: string;
 }
 export interface EventData extends Record<string, unknown> {
   text: string; role: 'user' | 'assistant' | 'tool' | 'system'; taskId: string; sessionId: string;

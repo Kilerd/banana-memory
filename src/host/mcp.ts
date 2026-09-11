@@ -36,8 +36,8 @@ export async function runMcp(dataDir: string, cliPath: string): Promise<void> {
     annotations: { readOnlyHint: true },
   }, call('recall'));
   server.registerTool('record', {
-    description: 'Durably submit a candidate observation in the language of the user input that motivated it, preserving code and identifiers. MCP content is always model/tool-originated; it cannot claim a user-confirmed fact or task success.',
-    inputSchema: { text: z.string().min(1).max(24_000), taskId: z.string().max(128).optional(), sourceIds: z.array(z.string().max(128)).max(20).optional(), idempotencyKey: z.string().max(128).optional() },
+    description: 'Durably submit a candidate observation in the language of the user input that motivated it, preserving code and identifiers. Use the stable project or product name as projectName, not a task or session title; it is display-only and never changes project scope. MCP content is always model/tool-originated; it cannot claim a user-confirmed fact or task success.',
+    inputSchema: { text: z.string().min(1).max(24_000), projectName: z.string().trim().min(1).max(128).describe('Stable human-readable project or product name; display-only.').optional(), taskId: z.string().max(128).optional(), sourceIds: z.array(z.string().max(128)).max(20).optional(), idempotencyKey: z.string().max(128).optional() },
   }, call('record'));
   server.registerTool('feedback', {
     description: 'Record evidence about a task or delivered context. A tool success or model self-evaluation alone never promotes a general rule.',

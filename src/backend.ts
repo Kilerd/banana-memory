@@ -62,9 +62,10 @@ export async function createBackend(dataDirectory: string): Promise<ServerBacken
         case 'record': {
           const clean = sanitizeText(String(args.text ?? ''));
           const taskId = typeof args.taskId === 'string' ? args.taskId : undefined;
+          const projectName = typeof args.projectName === 'string' ? args.projectName : undefined;
           const sourceIds = Array.isArray(args.sourceIds) ? args.sourceIds.filter((id): id is string => typeof id === 'string').sort() : undefined;
           const id = typeof args.idempotencyKey === 'string' ? args.idempotencyKey : digest(JSON.stringify({ session: scope.sessionId, task: taskId, text: clean.text, sources: sourceIds }));
-          const received = await service.record(scope, { id, text: clean.text, taskId, sourceIds, role: 'assistant', filtered: clean.filtered, filterReasons: clean.reasons });
+          const received = await service.record(scope, { id, text: clean.text, projectName, taskId, sourceIds, role: 'assistant', filtered: clean.filtered, filterReasons: clean.reasons });
           if (scope.includeCandidates || Number((await service.inspect(scope)).queue) >= 20) void service.processPending().catch(() => {});
           return received;
         }

@@ -9,7 +9,7 @@ import { promisify } from 'node:util';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { ListRootsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
-import { startHttpServer } from '../src/host/http.js';
+import { startHttpServer, WORKSPACE_ROOT_HEADER } from '../src/host/http.js';
 import { runtimeDirectory } from '../src/host/ipc.js';
 import type { HostIdentity, ServerBackend } from '../src/host/contracts.js';
 
@@ -55,13 +55,79 @@ test('foreground HTTP MCP authenticates requests and binds tools to the client r
   client.setRequestHandler(ListRootsRequestSchema, async () => ({ roots: [{ uri: pathToFileURL(workspace).href, name: 'fixture' }] }));
   const transport = new StreamableHTTPClientTransport(new URL(server.url), { requestInit: { headers: { authorization: 'Bearer test-secret' } } });
   await client.connect(transport);
-  const result = await client.callTool({ name: 'record', arguments: { text: 'The API uses port 7443.', taskId: 'task-1' } });
+  assert.match(client.getInstructions() ?? '', /call recall/);
+  assert.match(client.getInstructions() ?? '', /call record before the final response/);
+  const result = await client.callTool({ name: 'record', arguments: { text: 'The API uses port 7443.', projectName: 'Control Plane', taskId: 'task-1' } });
   assert.equal(result.isError, undefined);
   assert.equal(identities.length, 1);
-  assert.deepEqual(identities[0], { workspace: await realpath(workspace), sessionId: transport.sessionId, origin: 'mcp', includeCandidates: true });
+  assert.deepEqual(identities[0], { workspace: await realpath(workspace), projectName: 'fixture', sessionId: transport.sessionId, origin: 'mcp', includeCandidates: true });
   assert.equal(calls[0]?.tool, 'record');
-  assert.deepEqual(calls[0]?.args, { text: 'The API uses port 7443.', taskId: 'task-1' });
+  assert.deepEqual(calls[0]?.args, { text: 'The API uses port 7443.', projectName: 'Control Plane', taskId: 'task-1' });
   await client.close();
+});
+
+test('Codex workspace headers keep rootless MCP sessions on the same trusted project', async t => {
+  const directory = await mkdtemp(join(tmpdir(), 'banana-http-codex-'));
+  const workspace = await mkdtemp(join(tmpdir(), 'banana-http-codex-workspace-'));
+  t.after(async () => {
+    await rm(directory, { recursive: true, force: true });
+    await rm(workspace, { recursive: true, force: true });
+    await rm(runtimeDirectory(directory), { recursive: true, force: true });
+  });
+  const identities: HostIdentity[] = [];
+  const backend: ServerBackend = {
+    async bind(identity) { identities.push(identity); return identity; },
+    async handleHook() { throw new Error('unexpected_hook'); },
+    async call(context) { return context; },
+    async close() {},
+  };
+  const server = await startHttpServer({ dataDir: directory, port: 0, token: 'test-secret', createBackend: async () => backend });
+  t.after(() => server.close());
+
+  for (let index = 0; index < 2; index++) {
+    const client = new Client({ name: `codex-${index}`, version: '1.0.0' }, { capabilities: {} });
+    const transport = new StreamableHTTPClientTransport(new URL(server.url), { requestInit: { headers: {
+      authorization: 'Bearer test-secret',
+      [WORKSPACE_ROOT_HEADER]: pathToFileURL(workspace).href,
+    } } });
+    await client.connect(transport);
+    const result = await client.callTool({ name: 'inspect', arguments: {} });
+    assert.equal(result.isError, undefined);
+    await client.close();
+  }
+
+  assert.equal(identities.length, 2);
+  assert.deepEqual(identities.map(identity => identity.workspace), [await realpath(workspace), await realpath(workspace)]);
+  assert.notEqual(identities[0]?.sessionId, identities[1]?.sessionId);
+  assert.equal(identities.every(identity => identity.scopeReason === undefined), true);
+});
+
+test('the Codex header helper emits authentication and a canonical file root', async t => {
+  const directory = await mkdtemp(join(tmpdir(), 'banana-http-helper-'));
+  const workspace = await mkdtemp(join(tmpdir(), 'banana-http-helper-workspace-'));
+  t.after(async () => {
+    await rm(directory, { recursive: true, force: true });
+    await rm(workspace, { recursive: true, force: true });
+    await rm(runtimeDirectory(directory), { recursive: true, force: true });
+  });
+  const backend: ServerBackend = {
+    async bind(identity) { return identity; },
+    async handleHook() { throw new Error('unexpected_hook'); },
+    async call() { throw new Error('unexpected_call'); },
+    async close() {},
+  };
+  const server = await startHttpServer({ dataDir: directory, port: 0, createBackend: async () => backend });
+  t.after(() => server.close());
+  const repository = process.cwd();
+  const cli = join(repository, 'src/cli.ts');
+  const { stdout, stderr } = await execFileAsync(join(repository, 'node_modules/.bin/tsx'), [cli, 'codex-headers', pathToFileURL(directory).href], {
+    cwd: workspace,
+  });
+  assert.equal(stderr, '');
+  assert.deepEqual(JSON.parse(stdout), {
+    Authorization: `Bearer ${server.token}`,
+    'X-Banana-Memory-Root': pathToFileURL(await realpath(workspace)).href,
+  });
 });
 
 test('a repeated start reports the healthy foreground server and exits successfully', async t => {
@@ -87,5 +153,6 @@ test('a repeated start reports the healthy foreground server and exits successfu
   assert.match(stdout, /^Banana Memory is already running\./);
   assert.match(stdout, new RegExp(`UI:  http://127\\.0\\.0\\.1:${server.port}/#token=[a-f0-9]{64}`));
   assert.match(stdout, new RegExp(`MCP: http://127\\.0\\.0\\.1:${server.port}/mcp`));
+  assert.ok(stdout.includes(`http_headers_helper = "npx -y banana-memory@latest codex-headers '${pathToFileURL(directory).href}'"`));
   assert.match(stdout, /claude mcp add --transport http --scope user/);
 });

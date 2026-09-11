@@ -6,13 +6,13 @@
 
 ## 安装与使用
 
-需要 Node.js **22.23.1 或更高版本**和 Claude Code。在第一个终端启动前台服务：
+需要 Node.js **22.23.1 或更高版本**，以及 Codex 或 Claude Code。在第一个终端启动前台服务：
 
 ```sh
 npx -y banana-memory@latest start
 ```
 
-服务只监听 `127.0.0.1:3927`。终端会持续显示模型准备状态，并输出本地管理页地址和一条带本机访问 token 的 `claude mcp add` 命令。管理页会显示实际使用的生成模型、向量模型和 llama.cpp 运行时，也可以筛选所有项目的记忆，查看状态、时间退化、来源、版本历史以及合并和派生关系。保持该终端运行；按 `Ctrl+C` 会安全关闭模型与数据库，已记录的数据和下载进度保留在 `~/.banana-memory`。
+服务只监听 `127.0.0.1:3927`。终端会持续显示模型准备状态，并输出本地管理页地址、Codex 配置和一条带本机访问 token 的 `claude mcp add` 命令。管理页会显示实际使用的生成模型、向量模型和 llama.cpp 运行时，也可以筛选所有项目的记忆，查看状态、时间退化、来源、版本历史以及合并和派生关系。保持该终端运行；按 `Ctrl+C` 会安全关闭模型与数据库，已记录的数据和下载进度保留在 `~/.banana-memory`。
 
 如果服务已经运行，再执行一次 `start` 会重新显示现有 UI、MCP 地址和添加命令，然后正常退出，不会启动第二套模型进程。UI 地址把 token 放在 URL fragment 中；浏览器收到后会移除 fragment，并仅在当前标签页会话中保存凭据。
 
@@ -22,11 +22,21 @@ npx -y banana-memory@latest start
 npx skills add Kilerd/banana-memory \
   --skill banana-memory \
   --global \
-  --agent claude-code \
+  --agent codex claude-code \
   --yes
 ```
 
-复制服务启动时输出的命令，一次性添加全局 MCP：
+Codex 用户把服务输出的配置加入 `~/.codex/config.toml`：
+
+```toml
+[mcp_servers.banana-memory]
+url = "http://127.0.0.1:3927/mcp"
+http_headers_helper = "npx -y banana-memory@latest codex-headers 'file:///Users/you/.banana-memory'"
+```
+
+请使用服务实际输出的路径，不要照抄示例中的 `you`。这个 helper 从本机私有数据目录读取访问 token，并把当前 Codex 进程的规范化工作目录作为受信任请求头发送。它不会把工作目录交给模型填写；因此 Remote Hand 等每轮创建新 MCP 连接的宿主仍会绑定到同一个项目。
+
+Claude Code 用户复制服务启动时输出的命令，一次性添加全局 MCP：
 
 ```sh
 claude mcp add \
@@ -56,7 +66,7 @@ BANANA_MEMORY_HOME=/absolute/path node dist/src/cli.js start --port 4927
 
 ## 工作方式与边界
 
-HTTP MCP 使用客户端提供的 `roots/list` 绑定当前项目。服务不会接受模型参数指定的工作区；无法取得可信文件根目录时，会退化到当前 MCP 会话独立的临时作用域，避免跨项目读取。
+HTTP MCP 优先使用已认证的本机 Codex helper 请求头或客户端提供的 `roots/list` 绑定当前项目。服务不会接受模型参数指定的工作区；无法取得可信文件根目录时，会退化到当前 MCP 会话独立的临时作用域，避免跨项目读取。Agent 可以在 `record` 中提供人类可读的 `projectName`，但它只改变管理页显示，不参与项目身份或读取授权。只读的 `recall` 和 `inspect` 不会创建项目；首次实际写入才会原子创建项目，旧的无事件、无记忆空项目也不会显示。
 
 每条新记忆都有 `project` 或 `global` 作用域。默认是当前项目；只有证据明确说明它是用户通用偏好、跨项目规则或跨项目事实时，事实和偏好才可标为 `global`。任务经历以及由多个经历合并出的经验始终留在原项目。跨项目召回会同时考虑当前项目记忆和全局记忆，并优先排列当前项目内容；全局记忆仍保留它的原始项目、来源和候选状态。旧版本创建的记忆按项目内处理。
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dataDirectory } from './host/ipc.js';
 
 const cliPath = fileURLToPath(import.meta.url);
@@ -9,7 +9,9 @@ function printHttpConnection(instance: { url: string; token: string }, alreadyRu
   const status = alreadyRunning ? 'Banana Memory is already running.' : 'Banana Memory is running in the foreground.';
   const stop = alreadyRunning ? '' : '\nPress Ctrl+C to stop.\n';
   const ui = instance.url.replace(/\/mcp$/, '/') + `#token=${instance.token}`;
-  process.stdout.write(`${status}\nUI:  ${ui}\nMCP: ${instance.url}\nData: ${dataDirectory()}\n\nAdd it to Claude Code once:\nclaude mcp add --transport http --scope user --header "Authorization: Bearer ${instance.token}" -- banana-memory ${instance.url}\n${stop}`);
+  const dataUrl = pathToFileURL(dataDirectory()).href.replaceAll("'", '%27');
+  const headers = `npx -y banana-memory@latest codex-headers '${dataUrl}'`;
+  process.stdout.write(`${status}\nUI:  ${ui}\nMCP: ${instance.url}\nData: ${dataDirectory()}\n\nAdd it to Codex once in ~/.codex/config.toml:\n[mcp_servers.banana-memory]\nurl = "${instance.url}"\nhttp_headers_helper = "${headers}"\n\nAdd it to Claude Code once:\nclaude mcp add --transport http --scope user --header "Authorization: Bearer ${instance.token}" -- banana-memory ${instance.url}\n${stop}`);
 }
 
 try {
@@ -19,6 +21,11 @@ try {
   } else if (command === 'mcp') {
     const { runMcp } = await import('./host/mcp.js');
     await runMcp(dataDirectory(), cliPath);
+  } else if (command === 'codex-headers') {
+    const { codexHttpHeaders } = await import('./host/http.js');
+    if (process.argv.length > 4) throw new Error('invalid_codex_headers_option');
+    const directory = process.argv[3] ? fileURLToPath(process.argv[3]) : dataDirectory();
+    process.stdout.write(JSON.stringify(await codexHttpHeaders(directory, process.cwd())) + '\n');
   } else if (command === 'start' || command === 'serve') {
     const flags = process.argv.slice(3);
     const portIndex = flags.indexOf('--port');
@@ -63,7 +70,7 @@ try {
       process.stdout.write(JSON.stringify(result) + '\n');
     } finally { client.close(); }
   } else {
-    process.stderr.write('Usage: banana-memory <start [--port PORT]|serve [--port PORT]|mcp|kernel|hook EVENT|models-retry>\n');
+    process.stderr.write('Usage: banana-memory <start [--port PORT]|serve [--port PORT]|codex-headers [DATA_DIR_FILE_URL]|mcp|kernel|hook EVENT|models-retry>\n');
     process.exitCode = 1;
   }
 } catch (error) {

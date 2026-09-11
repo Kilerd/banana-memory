@@ -30,7 +30,7 @@
 - 在 **Apple Silicon / 16 GB** 机器上使用最终版本、真实查询 embedding、20,000 事件 / 5,000 记忆 / 两并行会话，测量热召回 p95、hook 端到端延迟、峰值资源及与 Claude 同机的影响。
 - 40 轨迹回归采用可重放提取夹具；真实模型小样本是另一组 12 事件 / 24 查询。二者不能相互替代，也不保证任意真实项目达到同等准确率。
 - “无长期记忆 / 原始经历 / 聚合＋老化”的真实任务成功、重复纠正及资源价值对比尚未实测。当前不声称存在固定成功率提升。
-- `banana-memory@0.2.0` 包含本地管理页和跨项目作用域，并继续通过 GitHub Actions OIDC trusted publishing 发布。
+- `banana-memory@0.2.1` 包含本地管理页、模型身份展示和跨项目作用域，并继续通过 GitHub Actions OIDC trusted publishing 发布。
 - HTTP 接入已通过 SDK 客户端协议测试，尚未补做真实 Claude Code + HTTP MCP + 全局 Skill 的双会话任务闭环；当前不能用旧插件闭环代替这项证据。
 
 ## 测量的解释边界

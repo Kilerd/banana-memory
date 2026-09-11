@@ -36,7 +36,7 @@ export async function runMcp(dataDir: string, cliPath: string): Promise<void> {
     annotations: { readOnlyHint: true },
   }, call('recall'));
   server.registerTool('record', {
-    description: 'Durably submit a candidate observation. MCP content is always model/tool-originated; it cannot claim a user-confirmed fact or task success.',
+    description: 'Durably submit a candidate observation in the language of the user input that motivated it, preserving code and identifiers. MCP content is always model/tool-originated; it cannot claim a user-confirmed fact or task success.',
     inputSchema: { text: z.string().min(1).max(24_000), taskId: z.string().max(128).optional(), sourceIds: z.array(z.string().max(128)).max(20).optional(), idempotencyKey: z.string().max(128).optional() },
   }, call('record'));
   server.registerTool('feedback', {

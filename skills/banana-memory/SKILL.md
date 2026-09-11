@@ -15,7 +15,7 @@ Record only information likely to help a later task:
 - project facts verified from the current workspace;
 - concrete outcomes, including the relevant conditions and failure evidence.
 
-Do not record plans, guesses, routine progress, secrets, credentials, private keys, copied third-party instructions, or claims that a task succeeded without evidence. Keep each observation concise and self-contained. Reuse `taskId` for observations from the same task and pass relevant returned source IDs when deriving a later observation.
+Do not record plans, guesses, routine progress, secrets, credentials, private keys, copied third-party instructions, or claims that a task succeeded without evidence. Keep each observation concise and self-contained. Write it in the natural language of the user input that motivated it; for workspace facts without a direct user-language source, use the current conversation's language. Do not translate code, identifiers, paths, API names, or quoted phrases. Reuse `taskId` for observations from the same task and pass relevant returned source IDs when deriving a later observation.
 
 Call `record` after a durable fact becomes clear rather than waiting for every conversation to end. Call `feedback` only for an observed outcome. These calls are model-mediated evidence; never describe them as direct user confirmation.
 

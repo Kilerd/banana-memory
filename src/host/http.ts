@@ -169,7 +169,7 @@ function registerTools(server: McpServer, context: () => Promise<unknown>, backe
     annotations: { readOnlyHint: true },
   }, call('recall'));
   server.registerTool('record', {
-    description: 'Queue a concise durable observation from the current task. Record direct user preferences, verified project facts and reusable outcomes; do not record plans, secrets, guesses or copied third-party instructions.',
+    description: 'Queue a concise durable observation from the current task in the language of the user input that motivated it. Preserve code and identifiers. Record direct user preferences, verified project facts and reusable outcomes; do not record plans, secrets, guesses or copied third-party instructions.',
     inputSchema: { text: z.string().min(1).max(24_000), taskId: z.string().max(128).optional(), sourceIds: z.array(z.string().max(128)).max(20).optional(), idempotencyKey: z.string().max(128).optional() },
   }, call('record'));
   server.registerTool('feedback', {

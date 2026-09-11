@@ -141,7 +141,9 @@ async function body(req: IncomingMessage): Promise<unknown> {
 async function clientWorkspace(server: McpServer): Promise<{ workspace: string | null; scopeReason?: string }> {
   if (!server.server.getClientCapabilities()?.roots) return { workspace: null, scopeReason: 'host_workspace_unavailable' };
   try {
-    const roots = (await server.server.listRoots(undefined, { timeout: 3000 })).roots;
+    // Root negotiation happens once per MCP session. Allow slower clients and
+    // loaded machines enough time before falling back to session isolation.
+    const roots = (await server.server.listRoots(undefined, { timeout: 10_000 })).roots;
     for (const root of roots) {
       const url = new URL(root.uri);
       if (url.protocol !== 'file:') continue;

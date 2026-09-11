@@ -4,6 +4,13 @@ import { dataDirectory } from './host/ipc.js';
 
 const cliPath = fileURLToPath(import.meta.url);
 const command = process.argv[2];
+
+function printHttpConnection(instance: { url: string; token: string }, alreadyRunning: boolean): void {
+  const status = alreadyRunning ? 'Banana Memory is already running.' : 'Banana Memory is running in the foreground.';
+  const stop = alreadyRunning ? '' : '\nPress Ctrl+C to stop.\n';
+  process.stdout.write(`${status}\nMCP: ${instance.url}\nData: ${dataDirectory()}\n\nAdd it to Claude Code once:\nclaude mcp add --transport http --scope user --header "Authorization: Bearer ${instance.token}" -- banana-memory ${instance.url}\n${stop}`);
+}
+
 try {
   if (command === 'hook') {
     const { runHook } = await import('./host/hook.js');
@@ -17,12 +24,19 @@ try {
     const port = portIndex >= 0 ? Number(flags[portIndex + 1]) : undefined;
     if (portIndex >= 0 && (!flags[portIndex + 1] || !Number.isSafeInteger(port))) throw new Error('invalid_http_port');
     if (flags.some((flag, index) => flag !== '--port' && index !== portIndex + 1)) throw new Error('invalid_http_option');
-    const [{ createBackend }, { startHttpServer }] = await Promise.all([import('./backend.js'), import('./host/http.js')]);
-    const instance = await startHttpServer({ dataDir: dataDirectory(), createBackend, port });
-    process.stdout.write(`Banana Memory is running in the foreground.\nMCP: ${instance.url}\nData: ${dataDirectory()}\n\nAdd it to Claude Code once:\nclaude mcp add --transport http --scope user --header \"Authorization: Bearer ${instance.token}\" -- banana-memory ${instance.url}\n\nPress Ctrl+C to stop.\n`);
-    const close = () => { void instance.close().finally(() => { process.exitCode = 0; }); };
-    process.once('SIGTERM', close); process.once('SIGINT', close);
-    await instance.done;
+    const [{ createBackend }, { startHttpServer, probeRunningHttpServer }] = await Promise.all([import('./backend.js'), import('./host/http.js')]);
+    try {
+      const instance = await startHttpServer({ dataDir: dataDirectory(), createBackend, port });
+      printHttpConnection(instance, false);
+      const close = () => { void instance.close().finally(() => { process.exitCode = 0; }); };
+      process.once('SIGTERM', close); process.once('SIGINT', close);
+      await instance.done;
+    } catch (error) {
+      if (!(error instanceof Error) || error.message !== 'server_already_running') throw error;
+      const running = await probeRunningHttpServer({ dataDir: dataDirectory(), port });
+      if (!running) throw error;
+      printHttpConnection(running, true);
+    }
   } else if (command === 'kernel') {
     const { startKernel } = await import('./host/kernel.js');
     const instance = await startKernel({ dataDir: dataDirectory(), createBackend: async dataDir => {

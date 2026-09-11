@@ -14,6 +14,8 @@ npx -y banana-memory@latest start
 
 服务只监听 `127.0.0.1:3927`。终端会持续显示模型准备状态，并输出一条带本机访问 token 的 `claude mcp add` 命令。保持该终端运行；按 `Ctrl+C` 会安全关闭模型与数据库，已记录的数据和下载进度保留在 `~/.banana-memory`。
 
+如果服务已经运行，再执行一次 `start` 会显示现有 MCP 地址和添加命令，然后正常退出，不会启动第二套模型进程。
+
 一次性安装全局 Skill：
 
 ```sh

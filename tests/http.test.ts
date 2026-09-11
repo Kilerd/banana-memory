@@ -1,15 +1,19 @@
 import assert from 'node:assert/strict';
+import { execFile } from 'node:child_process';
 import { mkdtemp, realpath, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { test } from 'node:test';
+import { promisify } from 'node:util';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { ListRootsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { startHttpServer } from '../src/host/http.js';
 import { runtimeDirectory } from '../src/host/ipc.js';
 import type { HostIdentity, ServerBackend } from '../src/host/contracts.js';
+
+const execFileAsync = promisify(execFile);
 
 test('foreground HTTP MCP authenticates requests and binds tools to the client root', async t => {
   const directory = await mkdtemp(join(tmpdir(), 'banana-http-'));
@@ -49,4 +53,29 @@ test('foreground HTTP MCP authenticates requests and binds tools to the client r
   assert.equal(calls[0]?.tool, 'record');
   assert.deepEqual(calls[0]?.args, { text: 'The API uses port 7443.', taskId: 'task-1' });
   await client.close();
+});
+
+test('a repeated start reports the healthy foreground server and exits successfully', async t => {
+  const directory = await mkdtemp(join(tmpdir(), 'banana-http-repeat-'));
+  t.after(async () => {
+    await rm(directory, { recursive: true, force: true });
+    await rm(runtimeDirectory(directory), { recursive: true, force: true });
+  });
+  const backend: ServerBackend = {
+    async bind(identity) { return identity; },
+    async handleHook() { throw new Error('unexpected_hook'); },
+    async call() { throw new Error('unexpected_call'); },
+    async close() {},
+  };
+  const server = await startHttpServer({ dataDir: directory, port: 0, createBackend: async () => backend });
+  t.after(() => server.close());
+
+  const { stdout, stderr } = await execFileAsync(process.execPath, [
+    '--import', 'tsx', join(process.cwd(), 'src/cli.ts'), 'start', '--port', String(server.port),
+  ], { env: { ...process.env, BANANA_MEMORY_HOME: directory } });
+
+  assert.equal(stderr, '');
+  assert.match(stdout, /^Banana Memory is already running\./);
+  assert.match(stdout, new RegExp(`MCP: http://127\\.0\\.0\\.1:${server.port}/mcp`));
+  assert.match(stdout, /claude mcp add --transport http --scope user/);
 });

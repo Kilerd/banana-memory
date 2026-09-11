@@ -15,7 +15,7 @@ import type { BackendFactory, MemoryTool, ServerBackend } from './contracts.js';
 import { safeErrorCode } from './errors.js';
 import { releaseMetadata } from './version.js';
 
-const DEFAULT_PORT = 3927;
+export const DEFAULT_HTTP_PORT = 3927;
 const MAX_BODY_BYTES = 1_000_000;
 
 export interface HttpServerOptions {
@@ -36,18 +36,23 @@ export interface RunningHttpServer {
   done: Promise<void>;
 }
 
-export async function loadOrCreateHttpToken(dataDir: string): Promise<string> {
-  await privateDirectory(dataDir);
+async function loadHttpToken(dataDir: string): Promise<string | undefined> {
   const path = join(dataDir, 'http-token');
   const existing = await readFile(path, 'utf8').then(value => value.trim(), error => {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined;
     throw error;
   });
-  if (existing) {
-    if (!/^[a-f0-9]{64}$/.test(existing)) throw new Error('invalid_http_token');
-    await chmod(path, 0o600);
-    return existing;
-  }
+  if (!existing) return undefined;
+  if (!/^[a-f0-9]{64}$/.test(existing)) throw new Error('invalid_http_token');
+  await chmod(path, 0o600);
+  return existing;
+}
+
+export async function loadOrCreateHttpToken(dataDir: string): Promise<string> {
+  await privateDirectory(dataDir);
+  const path = join(dataDir, 'http-token');
+  const existing = await loadHttpToken(dataDir);
+  if (existing) return existing;
   const token = randomBytes(32).toString('hex');
   try {
     const handle = await open(path, 'wx', 0o600);
@@ -60,6 +65,26 @@ export async function loadOrCreateHttpToken(dataDir: string): Promise<string> {
     if (!/^[a-f0-9]{64}$/.test(raced)) throw new Error('invalid_http_token');
     return raced;
   }
+}
+
+export async function probeRunningHttpServer(options: {
+  dataDir: string;
+  host?: '127.0.0.1';
+  port?: number;
+}): Promise<Pick<RunningHttpServer, 'host' | 'port' | 'url' | 'token'> | undefined> {
+  const host = options.host ?? '127.0.0.1';
+  const port = options.port ?? DEFAULT_HTTP_PORT;
+  const token = await loadHttpToken(options.dataDir);
+  if (!token) return undefined;
+  try {
+    const response = await fetch(`http://${host}:${port}/health`, {
+      signal: AbortSignal.timeout(1500),
+    });
+    if (!response.ok) return undefined;
+    const health = await response.json() as { status?: unknown };
+    if (health.status !== 'ok') return undefined;
+    return { host, port, url: `http://${host}:${port}/mcp`, token };
+  } catch { return undefined; }
 }
 
 function header(req: IncomingMessage, name: string): string | undefined {
@@ -160,7 +185,7 @@ function registerTools(server: McpServer, context: () => Promise<unknown>, backe
 
 export async function startHttpServer(options: HttpServerOptions): Promise<RunningHttpServer> {
   const host = options.host ?? '127.0.0.1';
-  const port = options.port ?? DEFAULT_PORT;
+  const port = options.port ?? DEFAULT_HTTP_PORT;
   if (!Number.isSafeInteger(port) || port < 0 || port > 65535) throw new Error('invalid_http_port');
   await privateDirectory(options.dataDir);
   const runtime = runtimeDirectory(options.dataDir);

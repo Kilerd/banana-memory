@@ -1,6 +1,6 @@
 {
   "name": "banana-memory",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Local, source-grounded project memory over Streamable HTTP MCP",
   "license": "Apache-2.0",
   "repository": {

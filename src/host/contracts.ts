@@ -1,6 +1,8 @@
 /** This identity is established by a trusted launcher, never by MCP arguments. */
 export interface HostIdentity {
   workspace: string | null;
+  /** Canonical repository root established locally; worktrees share it. */
+  projectRoot?: string;
   sessionId: string;
   origin: 'hook' | 'mcp';
   scopeReason?: string;

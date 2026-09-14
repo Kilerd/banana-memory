@@ -1,6 +1,8 @@
 import { createHash } from 'node:crypto';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import { realpath, stat } from 'node:fs/promises';
-import { isAbsolute, relative, resolve } from 'node:path';
+import { dirname, isAbsolute, relative, resolve } from 'node:path';
 import type { ExplicitIntent, HookName, NormalizedEvent } from './contracts.js';
 import { normalizeRuntimeName, type RuntimeName } from '../runtime-names.js';
 
@@ -25,11 +27,21 @@ export function parseExplicitIntent(payload: Record<string, unknown>): ExplicitI
   if (deletion) return { action: 'delete', previewId: deletion[1]! };
 }
 
-export async function resolveWorkspace(value: unknown): Promise<{ workspace: string | null; scopeReason?: string }> {
+export async function resolveWorkspace(value: unknown): Promise<{ workspace: string | null; projectRoot?: string; scopeReason?: string }> {
   if (typeof value !== 'string' || !isAbsolute(value)) return { workspace: null, scopeReason: 'host_workspace_unavailable' };
   try {
     const workspace = await realpath(value);
     if (!(await stat(workspace)).isDirectory()) throw new Error('not_directory');
+    // Linked worktrees and repository subdirectories share the main checkout's
+    // identity. Keep the actual workspace for host file-boundary checks.
+    try {
+      const { stdout } = await promisify(execFile)('git', ['-C', workspace, 'rev-parse', '--path-format=absolute', '--git-common-dir'], { timeout: 1500, maxBuffer: 8192 });
+      const common = await realpath(stdout.trim());
+      if (common.endsWith('/.git')) {
+        const projectRoot = dirname(common);
+        if (projectRoot !== workspace) return { workspace, projectRoot };
+      }
+    } catch { /* Non-Git folders keep their canonical directory identity. */ }
     return { workspace };
   } catch { return { workspace: null, scopeReason: 'host_workspace_unavailable' }; }
 }

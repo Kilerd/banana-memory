@@ -60,6 +60,7 @@ export async function createBackend(dataDirectory: string): Promise<ServerBacken
         case 'inspect': return service.inspect(scope, typeof args.target === 'string' ? args.target : undefined);
         case 'recall': return service.deliver(scope, await service.recall(scope, String(args.query ?? ''), args.mode === 'history' ? 'history' : 'current'));
         case 'record': {
+          if (!scope.workspace) throw new MemoryError('WORKSPACE_REQUIRED', 'Configure host workspace headers or MCP roots and reconnect before recording.');
           const clean = sanitizeText(String(args.text ?? ''));
           const taskId = typeof args.taskId === 'string' ? args.taskId : undefined;
           const projectName = typeof args.projectName === 'string' ? args.projectName : undefined;
@@ -69,7 +70,10 @@ export async function createBackend(dataDirectory: string): Promise<ServerBacken
           if (scope.includeCandidates || Number((await service.inspect(scope)).queue) >= 20) void service.processPending().catch(() => {});
           return received;
         }
-        case 'feedback': return service.feedback(scope, { taskId: String(args.taskId ?? scope.sessionId), bundleId: typeof args.bundleId === 'string' ? args.bundleId : undefined, text: sanitizeText(String(args.text ?? '')).text, sourceIds: Array.isArray(args.sourceIds) ? args.sourceIds.filter((id): id is string => typeof id === 'string') : undefined });
+        case 'feedback': {
+          if (!scope.workspace) throw new MemoryError('WORKSPACE_REQUIRED', 'Configure host workspace headers or MCP roots and reconnect before recording.');
+          return service.feedback(scope, { taskId: String(args.taskId ?? scope.sessionId), bundleId: typeof args.bundleId === 'string' ? args.bundleId : undefined, text: sanitizeText(String(args.text ?? '')).text, sourceIds: Array.isArray(args.sourceIds) ? args.sourceIds.filter((id): id is string => typeof id === 'string') : undefined });
+        }
         case 'manage': return service.manage(scope, String(args.intentToken ?? ''));
       }
     },

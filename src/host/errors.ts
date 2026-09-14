@@ -7,6 +7,9 @@ const HOST_CODES = new Set([
   'checksum_mismatch', 'unsupported_platform', 'model_output_invalid', 'model_failed',
   'http_body_limit', 'invalid_http_token', 'invalid_http_port', 'invalid_http_option',
   'server_already_running', 'http_request_failed',
+  'invalid_migration_plan', 'invalid_migration_option', 'migration_workspace_unavailable',
+  'duplicate_migration_target', 'duplicate_migration_source', 'migration_project_unavailable',
+  'migration_target_invalid', 'migration_project_requires_maintenance', 'migration_environment_conflict', 'migration_lock_lost',
 ]);
 
 /** Return stable error categories without emitting exception messages that may contain source text. */

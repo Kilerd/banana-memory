@@ -46,10 +46,24 @@ export interface LocalModels {
   status(): ModelStatus;
   prepare(): Promise<void>;
   extract(events: ModelEvent[]): Promise<MemoryCandidate[]>;
+  /** Background synthesis is always candidate evidence, never verified authority. */
+  summarize?(members: SummaryMember[]): Promise<MemorySummary | null>;
   embed(text: string, purpose: 'query' | 'document'): Promise<number[]>;
   shutdown(): Promise<void>;
   /** An explicit user retry is required after a persistent download failure. */
   retry?(): Promise<void>;
+}
+
+export interface SummaryMember {
+  id: string;
+  text: string;
+  createdAt: string;
+  conditions: string[];
+  environment: Record<string, string>;
+}
+export interface MemorySummary {
+  text: string;
+  evidence: Array<{ memberId: string; quote: string }>;
 }
 
 export interface Resource {

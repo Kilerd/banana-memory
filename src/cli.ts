@@ -26,6 +26,11 @@ try {
     if (process.argv.length > 4) throw new Error('invalid_codex_headers_option');
     const directory = process.argv[3] ? fileURLToPath(process.argv[3]) : dataDirectory();
     process.stdout.write(JSON.stringify(await codexHttpHeaders(directory, process.cwd())) + '\n');
+  } else if (command === 'migrate-projects') {
+    const plan = process.argv[3];
+    if (!plan || process.argv.length > 5 || process.argv[4] && process.argv[4] !== '--apply') throw new Error('invalid_migration_option');
+    const { migrateProjects } = await import('./migration.js');
+    process.stdout.write(JSON.stringify(await migrateProjects(dataDirectory(), plan, process.argv[4] === '--apply')) + '\n');
   } else if (command === 'start' || command === 'serve') {
     const flags = process.argv.slice(3);
     const portIndex = flags.indexOf('--port');
@@ -70,7 +75,7 @@ try {
       process.stdout.write(JSON.stringify(result) + '\n');
     } finally { client.close(); }
   } else {
-    process.stderr.write('Usage: banana-memory <start [--port PORT]|serve [--port PORT]|codex-headers [DATA_DIR_FILE_URL]|mcp|kernel|hook EVENT|models-retry>\n');
+    process.stderr.write('Usage: banana-memory <start [--port PORT]|serve [--port PORT]|codex-headers [DATA_DIR_FILE_URL]|migrate-projects PLAN.json [--apply]|mcp|kernel|hook EVENT|models-retry>\n');
     process.exitCode = 1;
   }
 } catch (error) {

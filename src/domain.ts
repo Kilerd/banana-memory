@@ -4,9 +4,9 @@ import { versionMatches } from './consolidation.js';
 export const POLICY_VERSION = 'memory-policy-2';
 export const digest = (value: string): string => createHash('sha256').update(value).digest('hex');
 export type MemoryState = 'candidate' | 'active' | 'review' | 'superseded' | 'archived';
-export type MemoryType = 'fact' | 'preference' | 'episode' | 'experience';
+export type MemoryType = 'fact' | 'preference' | 'episode' | 'experience' | 'summary';
 export type MemoryScope = 'project' | 'global';
-export type ErrorCode = 'PAUSED' | 'UNAUTHORIZED' | 'VERSION_CONFLICT' | 'SOURCE_DELETED' | 'TIMEOUT' | 'PROCESSING_FAILED' | 'INVALID_INPUT';
+export type ErrorCode = 'PAUSED' | 'UNAUTHORIZED' | 'WORKSPACE_REQUIRED' | 'VERSION_CONFLICT' | 'SOURCE_DELETED' | 'TIMEOUT' | 'PROCESSING_FAILED' | 'INVALID_INPUT';
 export class MemoryError extends Error {
   constructor(public code: ErrorCode, message: string) { super(message); this.name = 'MemoryError'; }
 }

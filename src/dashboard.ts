@@ -36,8 +36,8 @@ export const dashboardHtml = String.raw`<!doctype html>
   <aside><div class="brand"><div class="mark">🍌</div><div><strong>Banana Memory</strong><small>本地记忆控制台</small></div></div><div class="nav-title">项目</div><div id="projects"></div></aside>
   <main>
     <div class="top"><div><div class="eyebrow">Memory Observatory</div><h1>记忆如何留下，<br>又如何变化。</h1><div class="model"><i></i><span id="model">正在连接本地服务…</span></div><div class="model-details" id="model-details"></div></div><button class="refresh" id="refresh">刷新</button></div>
-    <div class="stats" id="stats"></div>
-    <div class="toolbar"><input id="search" type="search" placeholder="搜索记忆、条件或原因"><select id="scope"><option value="">全部作用域</option><option value="project">当前项目</option><option value="global">跨项目</option></select><select id="state"><option value="">全部状态</option><option value="active">生效</option><option value="candidate">候选</option><option value="review">待复核</option><option value="archived">已归档</option><option value="superseded">已替代</option></select><select id="type"><option value="">全部类型</option><option value="fact">事实</option><option value="preference">偏好</option><option value="episode">经历</option><option value="experience">合并经验</option></select></div>
+    <div class="stats" id="stats"></div><p class="quiet" id="summary-status"></p>
+    <div class="toolbar"><input id="search" type="search" placeholder="搜索记忆、条件或原因"><select id="scope"><option value="">全部作用域</option><option value="project">当前项目</option><option value="global">跨项目</option></select><select id="state"><option value="">全部状态</option><option value="active">生效</option><option value="candidate">候选</option><option value="review">待复核</option><option value="archived">已归档</option><option value="superseded">已替代</option></select><select id="type"><option value="">全部类型</option><option value="fact">事实</option><option value="preference">偏好</option><option value="episode">经历</option><option value="experience">合并经验</option><option value="summary">归纳总结</option></select></div>
     <div class="result-line"><span id="result"></span><span id="updated"></span></div><div class="memory-grid" id="memories"></div><button class="more" id="more" hidden>再显示 100 条</button>
   </main>
 </div>
@@ -46,7 +46,7 @@ export const dashboardHtml = String.raw`<!doctype html>
 (() => {
   const $ = id => document.getElementById(id);
   const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const labels = {active:'生效',candidate:'候选',review:'待复核',archived:'已归档',superseded:'已替代',project:'项目内',global:'跨项目',fact:'事实',preference:'偏好',episode:'经历',experience:'合并经验'};
+  const labels = {active:'生效',candidate:'候选',review:'待复核',archived:'已归档',superseded:'已替代',project:'项目内',global:'跨项目',fact:'事实',preference:'偏好',episode:'经历',experience:'合并经验',summary:'归纳总结'};
   const decayLabels = {none:'稳定',expired:'已过有效期',environment_mismatch:'环境不再匹配',temporary_stale:'临时记忆超过 7 天',episode_stale:'经历超过 180 天'};
   let data = null, selectedProject = '', visibleLimit = 100;
   const hashToken = new URLSearchParams(location.hash.slice(1)).get('token');
@@ -54,11 +54,11 @@ export const dashboardHtml = String.raw`<!doctype html>
   const token = sessionStorage.getItem('banana-memory-token') || '';
   const fmt = value => value ? new Intl.DateTimeFormat('zh-CN',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(value)) : '—';
   function projectList() {
-    $('projects').innerHTML = '<button class="project-nav '+(!selectedProject?'on':'')+'" data-project=""><span class="dot"></span><span><b>全部项目</b><small>'+data.totals.memories+' 条记忆</small></span></button>' + data.projects.map(p => '<button class="project-nav '+(p.paused?'paused ':'')+(selectedProject===p.id?'on':'')+'" data-project="'+esc(p.id)+'"><span class="dot"></span><span><b>'+esc(p.name)+'</b><small>'+p.counts.memories+' 条 · '+p.counts.global+' 条跨项目</small></span></button>').join('');
+    $('projects').innerHTML = '<button class="project-nav '+(!selectedProject?'on':'')+'" data-project=""><span class="dot"></span><span><b>全部项目</b><small>'+data.totals.memories+' 条记忆</small></span></button>' + data.projects.map(p => '<button class="project-nav '+(p.paused?'paused ':'')+(selectedProject===p.id?'on':'')+'" data-project="'+esc(p.id)+'"><span class="dot"></span><span><b>'+esc(p.name)+'</b><small>'+p.counts.memories+' 条 · '+p.counts.global+' 条跨项目'+(!p.workspace?' · 未绑定工作区':'')+'</small></span></button>').join('');
     document.querySelectorAll('[data-project]').forEach(el => el.onclick = () => { selectedProject = el.dataset.project; visibleLimit=100; projectList(); render(); });
   }
   function stats() {
-    const items = [['记忆',data.totals.memories],['生效',data.totals.active],['候选',data.totals.candidates],['跨项目',data.totals.global],['合并经验',data.totals.derived]];
+    const items = [['记忆',data.totals.memories],['生效',data.totals.active],['候选',data.totals.candidates],['跨项目',data.totals.global],['衍生记忆',data.totals.derived]];
     $('stats').innerHTML = items.map(x => '<div class="stat"><b>'+x[1]+'</b><span>'+x[0]+'</span></div>').join('');
   }
   function filtered() {
@@ -81,6 +81,7 @@ export const dashboardHtml = String.raw`<!doctype html>
     $('detail-title').textContent = m.text;
     const members = m.lineage.memberIds || [], children = m.lineage.children || [], relations = m.lineage.relations || [], history = m.lineage.history || [];
     $('detail-body').innerHTML = '<section class="section"><h3>状态</h3><div class="chips"><span class="badge '+esc(m.effectiveState)+'">'+esc(labels[m.effectiveState])+'</span><span class="badge '+esc(m.scope)+'">'+esc(labels[m.scope])+'</span><span class="badge">'+esc(labels[m.type])+'</span></div><p>'+esc(m.reason)+'</p><div class="mono">'+esc(m.id)+' · v'+m.version+'<br>'+esc(m.projectName)+' · '+esc(m.projectId)+'</div></section><section class="section"><h3>退化</h3><p>当前权重 '+Math.round(m.decay.weight*100)+'% · '+esc(decayLabels[m.decay.reason]||m.decay.reason)+' · 距离最近使用/更新 '+m.decay.ageDays+' 天</p></section><section class="section"><h3>合并与派生</h3><div class="lineage"><div><b>'+members.length+'</b><span>合并成员</span></div><div><b>'+children.length+'</b><span>派生记忆</span></div><div><b>'+relations.length+'</b><span>证据关系</span></div></div>'+(members.length?'<p class="mono">成员：'+members.map(esc).join('<br>')+'</p>':'')+(children.length?'<p class="mono">派生：'+children.map(esc).join('<br>')+'</p>':'')+'</section><section class="section"><h3>适用条件</h3><p>'+(m.conditions.length?m.conditions.map(esc).join('<br>'):'无显式条件')+'</p><div class="mono">'+esc(JSON.stringify(m.environment||{}))+'</div></section><section class="section"><h3>原始证据</h3>'+(m.sources.length?m.sources.map(s => '<div class="source"><small>'+esc(s.role)+' · '+fmt(s.occurredAt)+' · '+esc(s.taskId)+'</small>'+esc(s.text)+'</div>').join(''):'<p class="quiet">来源已不可用</p>')+'</section><section class="section"><h3>版本历史</h3>'+(history.length?history.map(h => '<div class="history"><small>v'+h.version+' · '+fmt(h.updatedAt)+' · '+esc(labels[h.state]||h.state)+'</small>'+esc(h.reason)+'</div>').join(''):'<p class="quiet">当前是第一个版本</p>')+'</section>';
+    if (m.memberContexts?.length) $('detail-body').innerHTML += '<section class="section"><h3>归纳依据与各自适用条件</h3>'+m.memberContexts.map(c => '<div class="source"><small>'+esc(c.id)+' · '+esc(JSON.stringify(c.environment))+'</small>'+esc(c.text)+'<p>'+c.conditions.map(esc).join('<br>')+'</p></div>').join('')+'</section>';
     $('detail').showModal();
   }
   function renderModels(model) {
@@ -91,7 +92,7 @@ export const dashboardHtml = String.raw`<!doctype html>
   async function load() {
     if (!token) { $('memories').innerHTML='<div class="error">缺少访问凭据。请从 <span class="mono">banana-memory start</span> 输出的 UI 地址打开本页。</div>'; $('model').textContent='未认证'; return; }
     $('refresh').disabled=true;
-    try { const response=await fetch('/api/dashboard',{headers:{Authorization:'Bearer '+token},cache:'no-store'}); if(!response.ok) throw new Error(response.status===401?'访问凭据无效':'服务返回 '+response.status); data=await response.json(); $('model').textContent='本地处理服务 '+(data.model.phase||'unknown'); renderModels(data.model); $('updated').textContent='更新于 '+fmt(data.generatedAt); stats(); projectList(); render(); }
+    try { const response=await fetch('/api/dashboard',{headers:{Authorization:'Bearer '+token},cache:'no-store'}); if(!response.ok) throw new Error(response.status===401?'访问凭据无效':'服务返回 '+response.status); data=await response.json(); $('model').textContent='本地处理服务 '+(data.model.phase||'unknown'); renderModels(data.model); $('updated').textContent='更新于 '+fmt(data.generatedAt); const jobs=data.summaryJobs||[]; $('summary-status').textContent='归纳总结：'+jobs.filter(j=>j.state==='done').length+' 组已完成 · '+jobs.filter(j=>j.state==='running'||j.state==='queued').length+' 组处理中 · '+jobs.filter(j=>j.state==='failed').length+' 组失败。至少 3 条相关原始记忆、2 个独立来源时，后台尝试归纳；总结仍为候选。'; stats(); projectList(); render(); }
     catch(error){$('memories').innerHTML='<div class="error">'+esc(error.message)+'</div>'; $('model').textContent='连接失败';}
     finally{$('refresh').disabled=false;}
   }

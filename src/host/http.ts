@@ -57,7 +57,7 @@ export async function codexHttpHeaders(dataDir: string, cwd: string): Promise<Re
   if (!token) throw new Error('http_token_unavailable');
   const resolved = await resolveWorkspace(cwd);
   if (!resolved.workspace) throw new Error('host_workspace_unavailable');
-  return { Authorization: `Bearer ${token}`, 'X-Banana-Memory-Root': pathToFileURL(resolved.workspace).href };
+  return { Authorization: `Bearer ${token}`, 'X-Banana-Memory-Root': pathToFileURL(resolved.projectRoot ?? resolved.workspace).href };
 }
 
 export async function loadOrCreateHttpToken(dataDir: string): Promise<string> {
@@ -149,7 +149,7 @@ async function body(req: IncomingMessage): Promise<unknown> {
   return JSON.parse(Buffer.concat(chunks).toString('utf8'));
 }
 
-async function clientWorkspace(server: McpServer, rootHeader?: string): Promise<{ workspace: string | null; scopeReason?: string; projectName?: string }> {
+async function clientWorkspace(server: McpServer, rootHeader?: string): Promise<{ workspace: string | null; projectRoot?: string; scopeReason?: string; projectName?: string }> {
   if (rootHeader) {
     try {
       const url = new URL(rootHeader);
@@ -180,7 +180,8 @@ function registerTools(server: McpServer, context: () => Promise<unknown>, backe
       const result = await backend.call(await context(), tool, args);
       return { content: [{ type: 'text' as const, text: JSON.stringify(result) }] };
     } catch (error) {
-      return { isError: true, content: [{ type: 'text' as const, text: JSON.stringify({ error: safeErrorCode(error) }) }] };
+      const code = safeErrorCode(error);
+      return { isError: true, content: [{ type: 'text' as const, text: JSON.stringify({ error: code, ...(code === 'workspace_required' ? { hint: 'Configure codex-headers or MCP roots in the host, then reconnect. projectName cannot select a workspace.' } : {}) }) }] };
     }
   };
   server.registerTool('recall', {
